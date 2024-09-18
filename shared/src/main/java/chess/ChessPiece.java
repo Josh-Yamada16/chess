@@ -10,7 +10,7 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
-    private ChessGame.TeamColor color;
+    private final ChessGame.TeamColor color;
     private ChessPiece.PieceType t;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
