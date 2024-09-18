@@ -1,5 +1,7 @@
 package chess;
 
+import chess.PieceCalculators.kingCalc;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -52,6 +54,10 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        if (t == ChessPiece.PieceType.KING) {
+            kingCalc kingMoves = new kingCalc(board, myPosition);
+            return kingMoves.pieceMoves(board, myPosition);
+        }
         return new ArrayList<>();
     }
 }

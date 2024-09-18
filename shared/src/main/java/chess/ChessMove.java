@@ -9,10 +9,9 @@ package chess;
 public class ChessMove {
     private ChessPosition startPosition;
     private ChessPosition endPosition;
-    private ChessPiece.PieceType promotionPiece;
+    private ChessPiece.PieceType promotionPiece = null;
 
-    public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
-                     ChessPiece.PieceType promotionPiece) {
+    public ChessMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.promotionPiece = promotionPiece;
@@ -39,6 +38,9 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-        return promotionPiece;
+        if (endPosition.getRow()==0 || endPosition.getRow()==7){
+            return ChessPiece.PieceType.QUEEN;
+        }
+        return null;
     }
 }
