@@ -7,7 +7,7 @@ import chess.ChessPosition;
 import java.util.Collection;
 
 public interface PieceMovesInterface {
-    Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position);
+    Collection<ChessMove> moves(ChessBoard board, ChessPosition pos);
 
-    boolean isValid(ChessBoard board, ChessPosition position);
+    boolean isValid(ChessBoard board, ChessPosition position, ChessPosition ogPosition);
 }

@@ -1,6 +1,7 @@
 package chess;
 
-import chess.PieceCalculators.kingCalc;
+import chess.PieceCalculators.BaseMovementRule;
+import chess.PieceCalculators.KingRule;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,9 +56,23 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        if (t == ChessPiece.PieceType.KING) {
-            kingCalc kingMoves = new kingCalc(board, myPosition);
-            return kingMoves.pieceMoves(board, myPosition);
+        switch (this.t) {
+            case KING:
+                KingRule kingMoves = new KingRule(board, myPosition);
+                return kingMoves.moves(board, myPosition);
+//            case QUEEN:
+//                queenCalc queenMoves = new queenCalc(board, myPosition);
+//                return queenMoves.pieceMoves(board, myPosition);
+//            case BISHOP:
+//                bishopCalc bishopMoves = new bishopCalc(board, myPosition);
+//                return bishopMoves.pieceMoves(board, myPosition);
+//            case KNIGHT:
+//                knightCalc knightMoves = new knightCalc(board, myPosition);
+//                return knightMoves.pieceMoves(board, myPosition);
+//            case ROOK:
+//                rookCalc rookMoves = new rookCalc(board, myPosition);
+//                return rookMoves.pieceMoves(board, myPosition);
+
         }
         return new ArrayList<>();
     }

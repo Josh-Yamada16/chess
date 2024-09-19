@@ -11,10 +11,6 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-    private int round= 0;
-    private TeamColor teamTurn;
-    private ChessBoard board;
-
     public ChessGame() {
 
     }
@@ -23,12 +19,7 @@ public class ChessGame {
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        if (round%2 == 0){
-            return TeamColor.WHITE;
-        }
-        else{
-            return TeamColor.BLACK;
-        }
+        return null;
     }
 
     /**
@@ -36,9 +27,9 @@ public class ChessGame {
      *
      * @param team the team whose turn it is
      */
-    public void setTeamTurn(TeamColor team) {
-        this.teamTurn = team;
-    }
+//    public void setTeamTurn(TeamColor team) {
+//        return null;
+//    }
 
     /**
      * Enum identifying the 2 possible teams in a chess game
@@ -56,31 +47,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        ChessPiece piece = board.getPiece(startPosition);
-        return piece.pieceMoves(board, startPosition);
+        return null;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessGame chessGame = (ChessGame) o;
-        return round == chessGame.round && teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(round, teamTurn, board);
-    }
-
-    @Override
-    public String toString() {
-        return "ChessGame{" +
-                "round=" + round +
-                ", teamTurn=" + teamTurn +
-                ", board=" + board +
-                '}';
-    }
 
     /**
      * Makes a move in a chess game
