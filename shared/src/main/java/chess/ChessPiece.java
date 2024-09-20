@@ -71,6 +71,9 @@ public class ChessPiece {
             case ROOK:
                 RookRule rookMoves = new RookRule(board, myPosition);
                 return rookMoves.moves(board, myPosition);
+            case PAWN:
+                PawnRule pawnMoves = new PawnRule(board, myPosition);
+                return pawnMoves.moves(board, myPosition);
 
         }
         return new ArrayList<>();
