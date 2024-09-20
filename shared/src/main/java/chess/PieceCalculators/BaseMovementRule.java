@@ -36,11 +36,11 @@ public class BaseMovementRule implements PieceMovesInterface {
     @Override
     public boolean isValid(ChessBoard board, ChessPosition position, ChessPosition ogPosition) {
         // check if it's not going to fall off the board
-        if ((board.getPiece(position)) == null) {
-            return true;
-        }
         if (position.getRow() > 7 || position.getColumn() > 7){
             return false;
+        }
+        if ((board.getPiece(position)) == null) {
+            return true;
         }
         // check if it's not going to move into the same team
         if ((board.getPiece(position)).getTeamColor() == board.getPiece(ogPosition).getTeamColor()) {
