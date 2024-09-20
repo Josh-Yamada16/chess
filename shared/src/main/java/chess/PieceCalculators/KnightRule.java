@@ -1,10 +1,29 @@
 package chess.PieceCalculators;
 
 import chess.ChessBoard;
+import chess.ChessMove;
 import chess.ChessPosition;
 
-public class KnightRule extends BaseMovementRule{
+import java.util.Collection;
+import java.util.HashSet;
+
+public class KnightRule extends BaseMovementRule {
     public KnightRule(ChessBoard board, ChessPosition position) {
         super(board, position);
     }
+
+    public Collection<ChessMove> moves(ChessBoard board, ChessPosition position) {
+        var moves = new HashSet<ChessMove>();
+        calculateMoves(board, position, 2, -1, moves, false);
+        calculateMoves(board, position, 2, 1, moves, false);
+        calculateMoves(board, position, 1, 2, moves, false);
+        calculateMoves(board, position, -1, 2, moves, false);
+        calculateMoves(board, position, -2, 1, moves, false);
+        calculateMoves(board, position, -2, -1, moves, false);
+        calculateMoves(board, position, -1, -2, moves, false);
+        calculateMoves(board, position, 1, -2, moves, false);
+
+        return moves;
+    }
 }
+

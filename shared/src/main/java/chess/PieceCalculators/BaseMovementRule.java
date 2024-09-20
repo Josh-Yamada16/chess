@@ -7,9 +7,10 @@ import chess.ChessPosition;
 import java.util.Collection;
 import java.util.List;
 
-public class BaseMovementRule implements PieceMovesInterface {
+public class BaseMovementRule{
     private ChessBoard board;
     private ChessPosition position;
+    private boolean pathBlocked = false;
 
     public BaseMovementRule(ChessBoard board, ChessPosition position) {
         this.board = board;
@@ -20,23 +21,21 @@ public class BaseMovementRule implements PieceMovesInterface {
         int column = pos.getColumn();
         int multiplier = 1;
         do {
-            ChessPosition possiblePos = new ChessPosition(Math.abs(8-row)+(rowInc * multiplier), Math.abs(1+column)+(colInc * multiplier));
-            if (isValid(board, possiblePos, position)){
-                moves.add(new ChessMove(position, possiblePos, null));
+            ChessPosition possiblePos = new ChessPosition(8-row+(rowInc * multiplier), 1+column+(colInc * multiplier));
+            if (isValid(board, possiblePos, pos)){
+                moves.add(new ChessMove(pos, possiblePos, null));
+                if (board.getPiece(possiblePos) != null){
+                    break;
+                }
             }
             multiplier += 1;
-        } while (allowDistance && (Math.abs(Math.abs(8-row)+(rowInc * multiplier)) > 8 || Math.abs(Math.abs(1+column)+(colInc * multiplier)) > 8));
+        } while (!pathBlocked && allowDistance && 8-row+(rowInc * multiplier) <= 8 && 1+column+(colInc * multiplier) <= 8 && 8-row+(rowInc * multiplier) >= 1 && 1+column+(colInc * multiplier) >= 1);
+        pathBlocked = false;
     }
 
-    @Override
-    public Collection<ChessMove> moves(ChessBoard board, ChessPosition pos) {
-        return List.of();
-    }
-
-    @Override
     public boolean isValid(ChessBoard board, ChessPosition position, ChessPosition ogPosition) {
         // check if it's not going to fall off the board
-        if (position.getRow() > 7 || position.getColumn() > 7){
+        if (position.getRow() > 7 || position.getColumn() > 7 || position.getRow() < 0 || position.getColumn() < 0){
             return false;
         }
         if ((board.getPiece(position)) == null) {
@@ -44,6 +43,7 @@ public class BaseMovementRule implements PieceMovesInterface {
         }
         // check if it's not going to move into the same team
         if ((board.getPiece(position)).getTeamColor() == board.getPiece(ogPosition).getTeamColor()) {
+            pathBlocked = true;
             return false;
         }
         return true;
