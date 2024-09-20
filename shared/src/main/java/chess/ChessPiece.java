@@ -88,15 +88,15 @@ public class ChessPiece {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(color, t);
-    }
-
-    @Override
     public String toString() {
         return "ChessPiece{" +
                 "color=" + color +
                 ", t=" + t +
                 '}';
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(color, t);
     }
 }
