@@ -14,9 +14,9 @@ import java.util.Objects;
  */
 public class ChessPiece {
     private final ChessGame.TeamColor color;
-    private ChessPiece.PieceType t;
+    private PieceType t;
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         color = pieceColor;
         t = type;
     }
@@ -58,25 +58,25 @@ public class ChessPiece {
         switch (this.t) {
             case KING:
                 KingRule kingMoves = new KingRule(board, myPosition);
-                return kingMoves.moves(board, myPosition);
+                return kingMoves.moves();
             case QUEEN:
                 QueenRule queenMoves = new QueenRule(board, myPosition);
-                return queenMoves.moves(board, myPosition);
+                return queenMoves.moves();
             case BISHOP:
                 BishopRule bishopMoves = new BishopRule(board, myPosition);
-                return bishopMoves.moves(board, myPosition);
+                return bishopMoves.moves();
             case KNIGHT:
                 KnightRule knightMoves = new KnightRule(board, myPosition);
-                return knightMoves.moves(board, myPosition);
+                return knightMoves.moves();
             case ROOK:
                 RookRule rookMoves = new RookRule(board, myPosition);
-                return rookMoves.moves(board, myPosition);
+                return rookMoves.moves();
             case PAWN:
                 PawnRule pawnMoves = new PawnRule(board, myPosition);
-                return pawnMoves.moves(board, myPosition);
-
+                return pawnMoves.moves();
+            default:
+                return new ArrayList<>();
         }
-        return new ArrayList<>();
     }
 
     @Override

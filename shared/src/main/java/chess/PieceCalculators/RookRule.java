@@ -4,19 +4,19 @@ import chess.ChessBoard;
 import chess.ChessMove;
 import chess.ChessPosition;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
-public class RookRule extends BaseMovementRule{
+public class RookRule extends BaseMovement{
     public RookRule(ChessBoard board, ChessPosition position) {
         super(board, position);
     }
-    public Collection<ChessMove> moves(ChessBoard board, ChessPosition position) {
-        var moves = new HashSet<ChessMove>();
-        calculateMoves(board, position, 1, 0, moves, true);
-        calculateMoves(board, position, 0, 1, moves, true);
-        calculateMoves(board, position, 0, -1, moves, true);
-        calculateMoves(board, position, -1, 0, moves, true);
-        return moves;
+    public Collection<ChessMove> moves(){
+        Collection<ChessMove> moveSet = new ArrayList<ChessMove>();
+        moveCalculator(moveSet, 1, 0, true);
+        moveCalculator(moveSet, 0, 1, true);
+        moveCalculator(moveSet, -1, 0, true);
+        moveCalculator(moveSet, 0, -1, true);
+        return moveSet;
     }
 }
