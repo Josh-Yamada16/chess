@@ -80,7 +80,9 @@ public class ChessGame {
 
 
     public boolean moveInSet(ChessMove move, Collection<ChessMove> validMoves){
+        // checks if the moe is in the valid moves moveset
         for (ChessMove validMove : validMoves) {
+            // if the move is in the moveset -> return true
             if (validMove.equals(move)) {
                 return true;
             }
@@ -110,6 +112,7 @@ public class ChessGame {
                 throw new InvalidMoveException();
             }
             this.round++;
+            // sets whose turn is next depending on the round
             if (this.round % 2 == 0) {
                 setTeamTurn(TeamColor.WHITE);
             }
