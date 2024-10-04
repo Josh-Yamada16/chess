@@ -12,7 +12,11 @@ import java.util.Objects;
 public class ChessBoard {
     private ChessPiece[][] squares = new ChessPiece[8][8];
     public ChessBoard() {
-        
+        resetBoard();
+    }
+    // Copy constructor for shallow copy
+    public ChessBoard(ChessBoard other) {
+        this.squares = other.squares; // Copy primitive or immutable fields
     }
 
     /**
@@ -34,6 +38,17 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         return squares[position.getRow()][position.getColumn()];
+    }
+
+    public ChessPosition getKingPos(ChessGame.TeamColor teamColor) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (squares[i][j].getTeamColor() == teamColor && squares[i][j].getPieceType() == ChessPiece.PieceType.KING) {
+                    return new ChessPosition(8-i, 1+j);
+                }
+            }
+        }
+        return null;
     }
 
     @Override
