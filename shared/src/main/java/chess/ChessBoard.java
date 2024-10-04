@@ -12,11 +12,6 @@ import java.util.Objects;
 public class ChessBoard {
     private ChessPiece[][] squares = new ChessPiece[8][8];
     public ChessBoard() {
-        resetBoard();
-    }
-    // Copy constructor for shallow copy
-    public ChessBoard(ChessBoard other) {
-        this.squares = other.squares; // Copy primitive or immutable fields
     }
 
     /**
@@ -27,6 +22,10 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         squares[position.getRow()][position.getColumn()] = piece;
+    }
+
+    public void removePiece(ChessPosition position) {
+        squares[position.getRow()][position.getColumn()] = null;
     }
 
     /**

@@ -16,16 +16,20 @@ public class ChessGame {
     private ChessBoard board = new ChessBoard();
 
     public ChessGame() {
+        board.resetBoard();
+    }
+    // Copy constructor for shallow copy
+    public ChessGame(ChessGame other) {
+        round = other.round;
+        teamTurn = other.teamTurn; // Copy primitive or immutable fields
+        board = other.board;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        if (round % 2 == 0){
-            return TeamColor.WHITE;
-        }
-        return TeamColor.BLACK;
+        return teamTurn;
     }
 
     /**
@@ -37,12 +41,13 @@ public class ChessGame {
         teamTurn = team;
     }
 
+
     /**
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK;
     }
 
     /**
@@ -53,12 +58,25 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        // check if startposition is a null
         ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null){
+            return null;
+        }
+        // get moveset of the piece in question
         var moveSet = piece.pieceMoves(board, startPosition);
-        ChessBoard testBoard = new ChessBoard(this.board);
-
-
-        return null;
+        // iterate through moves to see if they are valid
+        for (ChessMove move : moveSet) {
+            // create copy instance of the game so that nothing saves to the real game
+            ChessGame testGame = new ChessGame(this);
+            testGame.board.addPiece(move.getEndPosition(), piece);
+            testGame.board.removePiece(move.getStartPosition());
+            // if that move puts their king in check in the game copy then remove the move from the moveset
+            if (testGame.isInCheck(piece.getTeamColor())) {
+                moveSet.remove(move);
+            }
+        }
+        return moveSet;
     }
 
 
@@ -69,8 +87,8 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        // check if move is in the collection from validmoves otherwise throws exception
-        throw new InvalidMoveException();
+        // check if move is in the collection from validmoves or it is that team's turn otherwise throws exception
+//        throw new InvalidMoveException();
         this.round++;
     }
 
@@ -117,6 +135,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         // if isInCheck() and validMoves() is empty for all pieces then return true
+        return true;
     }
 
     /**
@@ -128,6 +147,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         // if isInCheck() is false and validMoves() is empty for all pieces then return true
+        return true;
     }
 
     /**
