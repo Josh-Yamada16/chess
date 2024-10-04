@@ -170,12 +170,15 @@ public class ChessGame {
         // if isInCheck() and validMoves() is empty for all pieces then return true
         int count = 0;
         Collection<ChessPosition> positions = board.getNumberOfPieces(teamColor);
+        // the team has to be in check in order for it to be checkmate
         if (isInCheck(teamColor)) {
             for (ChessPosition pos : positions){
+                // counting how many of the pieces have an empty valid moveset
                 if (validMoves(pos).isEmpty()){
                     count++;
                 }
             }
+            // if all the pieces have nothing in the valid moveset -> the team is in checkmate
             if (count == positions.size()){
                 return true;
             }
@@ -197,12 +200,15 @@ public class ChessGame {
         // if isInCheck() is false and validMoves() is empty for all pieces then return true
         int count = 0;
         Collection<ChessPosition> positions = board.getNumberOfPieces(teamColor);
+        // the team cannot be in check in order for a stalemate to happen
         if (!isInCheck(teamColor)) {
             for (ChessPosition pos : positions){
+                // counting how many of the pieces have an empty moveset
                 if (validMoves(pos).isEmpty()){
                     count++;
                 }
             }
+            // if all the pieces have an empty moveset -> the teams are in stalemate
             if (count == positions.size()){
                 return true;
             }
