@@ -97,8 +97,10 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         // check if move is in the collection from validmoves or it is that team's turn otherwise throws exception
         if (board.getPiece(move.getStartPosition()) != null){
+            // checks if the move in question is in the valid move set and if that is the piece's turn
             if (moveInSet(move, validMoves(move.getStartPosition())) && board.getPiece(move.getStartPosition()).getTeamColor() == teamTurn) {
                 board.addPiece(move.getEndPosition(), board.getPiece(move.getStartPosition()));
+                // checks if the piece is going to be promoted or not for a pawn
                 if (move.getPromotionPiece() != null){
                     board.addPiece(move.getEndPosition(), new ChessPiece(board.getPiece(move.getStartPosition()).getTeamColor(), move.getPromotionPiece()));
                 }
