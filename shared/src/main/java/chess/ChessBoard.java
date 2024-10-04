@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -12,6 +14,10 @@ import java.util.Objects;
 public class ChessBoard {
     private ChessPiece[][] squares = new ChessPiece[8][8];
     public ChessBoard() {
+    }
+
+    public ChessBoard(ChessPiece[][] squares) {
+        this.squares = squares;
     }
 
     /**
@@ -28,6 +34,30 @@ public class ChessBoard {
         squares[position.getRow()][position.getColumn()] = null;
     }
 
+    public Collection<ChessPosition> getNumberOfPieces(ChessGame.TeamColor teamColor) {
+    Collection<ChessPosition> positions = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++) {
+                if (squares[i][j] != null) {
+                    if (squares[i][j].getTeamColor() == teamColor) {
+                        positions.add(new ChessPosition(8-i, 1+j));
+                    }
+                }
+            }
+        }
+        return positions;
+    }
+
+    public ChessBoard getBoardCopy(){
+        ChessPiece[][] copy = new ChessPiece[8][8];
+        for (int i = 0; i < squares.length; i++) {
+            for (int j = 0; j < squares[i].length; j++) {
+                copy[i][j] = squares[i][j];
+            }
+        }
+        return new ChessBoard(copy);
+    }
+
     /**
      * Gets a chess piece on the chessboard
      *
@@ -42,8 +72,10 @@ public class ChessBoard {
     public ChessPosition getKingPos(ChessGame.TeamColor teamColor) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (squares[i][j].getTeamColor() == teamColor && squares[i][j].getPieceType() == ChessPiece.PieceType.KING) {
-                    return new ChessPosition(8-i, 1+j);
+                if (squares[i][j] != null){
+                    if (squares[i][j].getTeamColor() == teamColor && squares[i][j].getPieceType() == ChessPiece.PieceType.KING) {
+                        return new ChessPosition(8-i, 1+j);
+                    }
                 }
             }
         }
