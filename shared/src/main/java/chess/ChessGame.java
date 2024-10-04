@@ -125,6 +125,7 @@ public class ChessGame {
         // loop through every piece on the board and find the opposite teams pieces
         for (int i = 0; i < 8; i++){
             for (int j = 0; j < 8; j++){
+                // make a fake piece to test it on the fake board
                 ChessPiece queryPiece = board.getPiece(new ChessPosition(8-i, j+1));
                 if (queryPiece != null){
                     if (queryPiece.getTeamColor() != team){
