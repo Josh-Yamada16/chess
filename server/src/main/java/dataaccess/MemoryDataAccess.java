@@ -10,57 +10,63 @@ import java.util.UUID;
 
 public class MemoryDataAccess implements DataAccess {
     final private HashMap<String, UserData> users = new HashMap<>();
+    final private HashMap<String, GameData> games = new HashMap<>();
+    final private HashMap<String, int> auths = new HashMap<>();
+    private int gameID = 0;
 
-    public UserData addUser(UserData user) {
-        user = new UserData(user.getUsername(), user.getEmail(), user.getPassword());
 
-        users.put(generateToken(), user);
-        return user;
+    public AuthData addUser(UserData user) {
+        AuthData auth = new AuthData(generateToken(), user.getUsername());
+        users.put(user.getUsername(), user);
+        return auth;
     }
 
     public Collection<GameData> listGames() {
-        return pets.values();
+        return games.values();
     }
 
-
-    public UserData getUser(int id) {
-        return pets.get(id);
+    public void addGame(GameData game) {
+        games.put(Integer.toString(gameID), game);
+        gameID++;
     }
 
-    public void deletePet(Integer id) {
-        pets.remove(id);
-    }
-
-    public void deleteAllPets() {
-        pets.clear();
-    }
-
-    @Override
-    public UserData addUser(UserData user) throws ResponseException {
+    public AuthData getUser(UserData user) {
+        if (users.get(user.getUsername()) != null){
+            AuthData auth = new AuthData(generateToken(), users.get(user.getUsername()).getUsername());
+            return auth;
+        }
         return null;
     }
 
-    @Override
-    public Collection<GameData> listGames() throws ResponseException {
-        return List.of();
+    public void deleteAuth(String UUID) {
+        auths.remove(UUID);
     }
 
-    @Override
-    public UserData getUser(int id) throws ResponseException {
-        return null;
+    public void deleteAllData() {
+        db.clear();
     }
 
-    @Override
-    public void deleteUser(Integer id) throws ResponseException {
 
-    }
-
-    @Override
-    public void deleteAllData() throws ResponseException {
-
-    }
-
-    @Override
+//    @Override
+//    public Collection<GameData> listGames() throws ResponseException {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public UserData getUser(UserData user) throws ResponseException {
+//        return null;
+//    }
+//
+//    @Override
+//    public void deleteUser(Integer id) throws ResponseException {
+//
+//    }
+//
+//    @Override
+//    public void deleteAllData() throws ResponseException {
+//
+//    }
+//
     public String generateToken() {
         return UUID.randomUUID().toString();
     }

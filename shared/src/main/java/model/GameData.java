@@ -1,7 +1,7 @@
 package model;
 import chess.ChessGame;
 
-public class GameData {
+public class GameData{
     private int gameID;
     private String whiteUsername;
     private String blackUsername;
@@ -14,5 +14,25 @@ public class GameData {
         this.blackUsername = blackUsername;
         this.gameName = gameName;
         this.game = game;
+    }
+
+    public int getGameID() {
+        return gameID;
+    }
+
+    public String getWhiteUsername() {
+        return whiteUsername;
+    }
+
+    public String getBlackUsername() {
+        return blackUsername;
+    }
+
+    public String getGameName() {
+        return gameName;
+    }
+
+    public ChessGame getGame() {
+        return game;
     }
 }

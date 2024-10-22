@@ -6,6 +6,7 @@ import exception.ResponseException;
 import model.*;
 
 import java.util.Collection;
+import java.util.UUID;
 
 public class Service {
 
@@ -19,7 +20,7 @@ public class Service {
     // A more complicated application would do the business logic in this
     // service.
 
-    public UserData addUser(UserData userData) throws ResponseException {
+    public AuthData addUser(UserData userData) throws ResponseException {
         if (pet.type() == PetType.DOG && pet.name().equals("fleas")) {
             throw new ResponseException(200, "no dogs with fleas");
         }
@@ -30,15 +31,17 @@ public class Service {
         return dataAccess.listGames();
     }
 
-    public UserData getUser(int id) throws ResponseException {
-        return dataAccess.getUser(id);
+    public AuthData getUser(UserData user) throws ResponseException {
+        return dataAccess.getUser(user);
     }
 
-    public void deleteUser(Integer id) throws ResponseException {
-        dataAccess.deleteUser(id);
+    public void deleteAuth(String UUID) throws ResponseException {
+        dataAccess.deleteAuth(UUID);
     }
 
     public void deleteAllData() throws ResponseException {
         dataAccess.deleteAllData();
     }
+
+
 }

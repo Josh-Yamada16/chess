@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 import model.*;
 //import server.websocket.WebSocketHandler;
+import org.eclipse.jetty.server.Authentication;
 import service.Service;
 import spark.*;
 
@@ -26,8 +27,8 @@ public class Server {
 //        Spark.webSocket("/ws", webSocketHandler);
 
         Spark.post("/user", this::addUser); // Registration
-        Spark.post("/session", this::getUser); // Login
-        Spark.delete("/session", this::deleteUser); // Logout
+        Spark.post("/session", this::loginUser); // Login
+        Spark.delete("/session", this::deleteAuth); // Logout
         Spark.get("/game", this::listGames); // List Games
         Spark.post("/game", this::getUser); // Create Game
         Spark.put("/game", this::addUser); // Join Game
@@ -50,6 +51,11 @@ public class Server {
         res.status(ex.StatusCode());
     }
 
+    private Object loginUser(Request req, Response res) throws ResponseException {
+        var user = new Gson().fromJson(req.body(), UserData.class);
+        return service.getUser(user);
+    }
+
     private Object addUser(Request req, Response res) throws ResponseException {
         var user = new Gson().fromJson(req.body(), UserData.class);
         user = service.addUser(user);
@@ -57,22 +63,18 @@ public class Server {
         return new Gson().toJson(user);
     }
 
-    private Object getUser(Request req, Response res) throws ResponseException {
-
-    }
-
     private Object listGames(Request req, Response res) throws ResponseException {
         res.type("application/json");
         var list = service.listGames().toArray();
-        return new Gson().toJson(Map.of("pet", list));
+        return new Gson().toJson(Map.of("games", list));
     }
 
 
-    private Object deleteUser(Request req, Response res) throws ResponseException {
+    private Object deleteAuth(Request req, Response res) throws ResponseException {
         var id = Integer.parseInt(req.params(":id"));
-        var pet = service.getUser(id);
-        if (pet != null) {
-            service.deleteUser(id);
+        var user = service.getUser(id);
+        if (user != null) {
+            service.deleteAuth(id);
 //            webSocketHandler.makeNoise(pet.name(), pet.sound());
             res.status(204);
         } else {
