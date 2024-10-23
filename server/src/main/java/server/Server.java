@@ -1,6 +1,8 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.MemoryDataAccess;
 import exception.ResponseException;
 import model.*;
 //import server.websocket.WebSocketHandler;
@@ -11,11 +13,11 @@ import spark.*;
 import java.util.Map;
 
 public class Server {
-    private final Service service;
+    private Service service;
 //    private final WebSocketHandler webSocketHandler;
 
-    public Server(Service service) {
-        this.service = service;
+    public Server() {
+        service = null;
 //        webSocketHandler = new WebSocketHandler();
     }
 
@@ -24,6 +26,8 @@ public class Server {
 
         Spark.staticFiles.location("web");
         Spark.init();
+        DataAccess dataAccess = new MemoryDataAccess();
+        service = new Service(dataAccess);
 
 //        Spark.webSocket("/ws", webSocketHandler);
 
@@ -60,9 +64,9 @@ public class Server {
 
     private Object registerUser(Request req, Response res) throws ResponseException {
         var user = new Gson().fromJson(req.body(), UserData.class);
-        user = service.addUser(user);
+        AuthData auth = service.registerUser(user);
 //        webSocketHandler.makeNoise(pet.username(), pet.sound());
-        return new Gson().toJson(user);
+        return new Gson().toJson(auth);
     }
 
     private Object getGame(Request req, Response res) throws ResponseException {
@@ -77,8 +81,8 @@ public class Server {
 
 
     private Object deleteAuth(Request req, Response res) throws ResponseException {
-        var id = Integer.parseInt(req.params(":id"));
-        var user = service.getUser(id);
+        var username = req.params(":username");
+        var user = service.getUser(username);
         if (user != null) {
             service.deleteAuth(id);
 //            webSocketHandler.makeNoise(pet.name(), pet.sound());

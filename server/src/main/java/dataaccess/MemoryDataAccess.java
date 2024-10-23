@@ -16,32 +16,28 @@ public class MemoryDataAccess implements DataAccess {
 
     public MemoryDataAccess() {
     }
-    public int matchUsername(String username) {
+    public boolean matchUsername(String username) {
         if (users.get(username) != null){
-            return 1;
+            return true;
         }
-        return 0;
+        return false;
     }
 
     @Override
-    public int matchPassword(UserData user) throws ResponseException {
-        if (users.get(user.getUsername()).getPassword().equals(user.getPassword())) {
-            return 1;
+    public boolean matchPassword(UserData user) {
+        if (users.get(user.username()).password().equals(user.password())) {
+            return true;
         }
-        return 0;
+        return false;
     }
 
     public AuthData createAuth(UserData user) {
-        AuthData auth = new AuthData(generateToken(), users.get(user.getUsername()).getUsername());
+        AuthData auth = new AuthData(generateToken(), users.get(user.username()).username());
         return auth;
     }
 
-
-
-    public AuthData addUser(UserData user) {
-        AuthData auth = new AuthData(generateToken(), user.getUsername());
-        users.put(user.getUsername(), user);
-        return auth;
+    public void addUser(UserData user) {
+        users.put(user.username(), user);
     }
 
     public Collection<GameData> listGames() {
