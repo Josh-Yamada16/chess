@@ -19,24 +19,25 @@ public class Server {
 //        webSocketHandler = new WebSocketHandler();
     }
 
-    public Server run(int port) {
+    public int run(int port) {
         Spark.port(port);
 
         Spark.staticFiles.location("web");
+        Spark.init();
 
 //        Spark.webSocket("/ws", webSocketHandler);
 
-        Spark.post("/user", this::addUser); // Registration
+        Spark.post("/user", this::registerUser); // Registration
         Spark.post("/session", this::loginUser); // Login
-        Spark.delete("/session", this::deleteAuth); // Logout
-        Spark.get("/game", this::listGames); // List Games
-        Spark.post("/game", this::getUser); // Create Game
-        Spark.put("/game", this::addUser); // Join Game
-        Spark.delete("/db", this::deleteAllData); // Clear Application
+//        Spark.delete("/session", this::deleteAuth); // Logout
+//        Spark.get("/game", this::listGames); // List Games
+//        Spark.post("/game", this::getGame); // Create Game
+//        Spark.put("/game", this::addUser); // Join Game
+//        Spark.delete("/db", this::deleteAllData); // Clear Application
         Spark.exception(ResponseException.class, this::exceptionHandler);
 
         Spark.awaitInitialization();
-        return this;
+        return Spark.port();
     }
 
     public int port() {
@@ -45,6 +46,7 @@ public class Server {
 
     public void stop() {
         Spark.stop();
+        Spark.awaitStop();
     }
 
     private void exceptionHandler(ResponseException ex, Request req, Response res) {
@@ -53,14 +55,18 @@ public class Server {
 
     private Object loginUser(Request req, Response res) throws ResponseException {
         var user = new Gson().fromJson(req.body(), UserData.class);
-        return service.getUser(user);
+        return service.loginUser(user);
     }
 
-    private Object addUser(Request req, Response res) throws ResponseException {
+    private Object registerUser(Request req, Response res) throws ResponseException {
         var user = new Gson().fromJson(req.body(), UserData.class);
         user = service.addUser(user);
 //        webSocketHandler.makeNoise(pet.username(), pet.sound());
         return new Gson().toJson(user);
+    }
+
+    private Object getGame(Request req, Response res) throws ResponseException {
+
     }
 
     private Object listGames(Request req, Response res) throws ResponseException {

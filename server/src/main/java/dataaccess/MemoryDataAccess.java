@@ -11,8 +11,31 @@ import java.util.UUID;
 public class MemoryDataAccess implements DataAccess {
     final private HashMap<String, UserData> users = new HashMap<>();
     final private HashMap<String, GameData> games = new HashMap<>();
-    final private HashMap<String, int> auths = new HashMap<>();
+    final private HashMap<String, Integer> auths = new HashMap<>();
     private int gameID = 0;
+
+    public MemoryDataAccess() {
+    }
+    public int matchUsername(String username) {
+        if (users.get(username) != null){
+            return 1;
+        }
+        return 0;
+    }
+
+    @Override
+    public int matchPassword(UserData user) throws ResponseException {
+        if (users.get(user.getUsername()).getPassword().equals(user.getPassword())) {
+            return 1;
+        }
+        return 0;
+    }
+
+    public AuthData createAuth(UserData user) {
+        AuthData auth = new AuthData(generateToken(), users.get(user.getUsername()).getUsername());
+        return auth;
+    }
+
 
 
     public AuthData addUser(UserData user) {
@@ -30,20 +53,14 @@ public class MemoryDataAccess implements DataAccess {
         gameID++;
     }
 
-    public AuthData getUser(UserData user) {
-        if (users.get(user.getUsername()) != null){
-            AuthData auth = new AuthData(generateToken(), users.get(user.getUsername()).getUsername());
-            return auth;
-        }
-        return null;
-    }
-
     public void deleteAuth(String UUID) {
         auths.remove(UUID);
     }
 
     public void deleteAllData() {
-        db.clear();
+        users.clear();
+        games.clear();
+        auths.clear();
     }
 
 

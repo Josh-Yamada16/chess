@@ -18,7 +18,17 @@ public class Service {
 
     // Pet Shop is very simple.
     // A more complicated application would do the business logic in this
+
     // service.
+    public AuthData loginUser(UserData user) throws ResponseException {
+        if (dataAccess.matchUsername(user.getUsername()) == 0){
+            throw new ResponseException(500, "Error: User not found");
+        }
+        if (dataAccess.matchPassword(user) == 0){
+            throw new ResponseException(500, "Error: unauthorized");
+        }
+        return dataAccess.createAuth(user);
+    }
 
     public AuthData addUser(UserData userData) throws ResponseException {
         if (pet.type() == PetType.DOG && pet.name().equals("fleas")) {
@@ -29,10 +39,6 @@ public class Service {
 
     public Collection<GameData> listGames() throws ResponseException {
         return dataAccess.listGames();
-    }
-
-    public AuthData getUser(UserData user) throws ResponseException {
-        return dataAccess.getUser(user);
     }
 
     public void deleteAuth(String UUID) throws ResponseException {
