@@ -1,21 +1,15 @@
-package passoff;
+package passoff.service;
 
-import chess.ChessGame;
 import dataaccess.implementations.*;
 import exception.DataAccessException;
 import model.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import passoff.model.TestCreateRequest;
-import passoff.model.TestUser;
-import passoff.server.TestServerFacade;
-import server.Server;
 import server.requests.JoinGameRequest;
 import service.GameService;
 import service.UserService;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 
