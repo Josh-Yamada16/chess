@@ -85,6 +85,7 @@ public class Server {
         }
     }
 
+    // added exception handling for the register endpoint
     private Object registerUser(Request req, Response res) {
         try {
             var user = new Gson().fromJson(req.body(), UserData.class);
@@ -96,6 +97,7 @@ public class Server {
         }
     }
 
+    // added exception handling for the listgames endpoint
     private Object listGames(Request req, Response res) {
         try{
             String authToken = req.headers("Authorization");
