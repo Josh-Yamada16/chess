@@ -15,6 +15,7 @@ public class UserService {
         this.authDao = authDAO;
     }
 
+    // exceptional handling in the register service point
     public AuthData registerUser(UserData userData) throws DataAccessException {
         if (userDao.getUser(userData.username()) != null) {
             throw new DataAccessException(403, "Error: already taken");
