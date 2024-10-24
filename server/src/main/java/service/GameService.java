@@ -6,7 +6,9 @@ import exception.DataAccessException;
 import model.*;
 import server.requests.JoinGameRequest;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 public class GameService {
 
@@ -61,5 +63,8 @@ public class GameService {
         authDao.clear();
     }
 
+    public ArrayList<Integer> onlyGames(){
+        return gameDao.onlyGames();
+    }
 
 }

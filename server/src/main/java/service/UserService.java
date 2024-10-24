@@ -5,6 +5,8 @@ import dataaccess.implementations.MemoryUserDAO;
 import exception.DataAccessException;
 import model.*;
 
+import java.util.HashMap;
+
 public class UserService {
 
     private final MemoryUserDAO userDao;
@@ -50,5 +52,8 @@ public class UserService {
         authDao.clear();
     }
 
+    public HashMap<String, UserData> getAllUsers() {
+        return userDao.getUserList();
+    }
 
 }

@@ -5,6 +5,7 @@ import dataaccess.interfaces.GameDAO;
 import model.GameData;
 import server.requests.JoinGameRequest;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -57,5 +58,9 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public Collection<GameData> listGames() {
         return games.values();
+    }
+
+    public ArrayList<Integer> onlyGames() {
+        return new ArrayList<>(games.keySet());
     }
 }
