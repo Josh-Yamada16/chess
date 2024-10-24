@@ -1,7 +1,7 @@
 //package server.websocket;
 //
 //import com.google.gson.Gson;
-//import dataaccess.DataAccess;
+//import dataaccess.interfaces.DataAccess;
 //import exception.ResponseException;
 //import org.eclipse.jetty.websocket.api.Session;
 //import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
