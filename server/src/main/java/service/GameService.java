@@ -18,15 +18,41 @@ public class GameService {
         this.authDao = authDAO;
     }
 
-    public int createGame(String gameName) throws DataAccessException {
+    public int createGame(String gameName, String authToken) throws DataAccessException {
+        if (!authDao.verifyAuth(authToken)) {
+            throw new DataAccessException(401, "Error: unauthorized");
+        }
+        if (gameName == null) {
+            throw new DataAccessException(400, "Error: bad request");
+        }
         return gameDao.createGame(gameName);
     }
 
-    public void joinGame(JoinGameRequest game) throws DataAccessException {
-        gameDao.addPlayer(game.getGameID(), game.getPlayerColor(), null);
+    public void joinGame(JoinGameRequest game, String authToken) throws DataAccessException {
+        if (!authDao.verifyAuth(authToken)) {
+            throw new DataAccessException(401, "Error: unauthorized");
+        }
+        if (game.getGameID() == 0 || game.getPlayerColor() == null){
+            throw new DataAccessException(400, "Error: bad request");
+        }
+        if (game.getPlayerColor() == JoinGameRequest.playerColor.WHITE){
+            if (gameDao.getGame(game.getGameID()).whiteUsername() != null) {
+                throw new DataAccessException(403, "Error: already taken");
+            }
+        }
+        else{
+            if (gameDao.getGame(game.getGameID()).blackUsername() != null) {
+                throw new DataAccessException(403, "Error: already taken");
+            }
+        }
+        String userName = authDao.getAuth(authToken).username();
+        gameDao.addPlayer(game.getGameID(), game.getPlayerColor(), userName);
     }
 
-    public Collection<GameData> listGames() throws DataAccessException {
+    public Collection<GameData> listGames(String authToken) throws DataAccessException {
+        if (!authDao.verifyAuth(authToken)) {
+            throw new DataAccessException(401, "Error: unauthorized");
+        }
         return gameDao.listGames();
     }
 

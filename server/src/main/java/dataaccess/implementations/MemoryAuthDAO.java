@@ -26,6 +26,10 @@ public class MemoryAuthDAO implements AuthDAO {
         return auths.containsKey(authToken);
     }
 
+    public UserData getAuth(String authToken) {
+        return auths.get(authToken);
+    }
+
     @Override
     public boolean deleteAuth(String UUID) {
         return auths.remove(UUID) != null;

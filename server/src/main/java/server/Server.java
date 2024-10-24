@@ -39,7 +39,7 @@ public class Server {
         Spark.post("/user", this::registerUser); // Registration
         Spark.post("/session", this::login); // Login
         Spark.delete("/session", this::logout); // Logout
-//        Spark.get("/game", this::listGames); // List Games
+        Spark.get("/game", this::listGames); // List Games
         Spark.post("/game", this::createGame); // Create Game
         Spark.put("/game", this::joinGame); // Join Game
         Spark.delete("/db", this::clear); // Clear Application
@@ -62,26 +62,34 @@ public class Server {
         res.status(ex.StatusCode());
     }
 
-    private Object login(Request req, Response res) throws DataAccessException {
+    private Object login(Request req, Response res) {
         try{
             var user = new Gson().fromJson(req.body(), UserData.class);
             return new Gson().toJson(userService.loginUser(user));
         } catch (DataAccessException ex){
+            res.status(ex.StatusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
 
-    private Object logout(Request req, Response res) throws DataAccessException {
-        return null;
-//        var auth = new Gson().fromJson(req.headers(), AuthData.class);
+    private Object logout(Request req, Response res) {
+        try{
+            String authToken = req.headers("Authorization");
+            userService.logout(authToken);
+            return new Gson().toJson(null);
+        } catch (DataAccessException ex){
+            res.status(ex.StatusCode());
+            return new Gson().toJson(Map.of("message", ex.getMessage()));
+        }
     }
 
-    private Object registerUser(Request req, Response res) throws DataAccessException {
+    private Object registerUser(Request req, Response res) {
         try {
             var user = new Gson().fromJson(req.body(), UserData.class);
             AuthData auth = userService.registerUser(user);
             return new Gson().toJson(auth);
         } catch (DataAccessException ex){
+            res.status(ex.StatusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
@@ -90,42 +98,45 @@ public class Server {
 //
 //    }
 
-    private Object listGames(Request req, Response res) throws DataAccessException {
-        res.type("application/json");
-        var list = gameService.listGames().toArray();
-        return new Gson().toJson(Map.of("games", list));
+    private Object listGames(Request req, Response res) {
+        try{
+            String authToken = req.headers("Authorization");
+            var list = gameService.listGames(authToken).toArray();
+            return new Gson().toJson(Map.of("games", list));
+        } catch (DataAccessException ex){
+            res.status(ex.StatusCode());
+            return new Gson().toJson(Map.of("message", ex.getMessage()));
+        }
     }
 
     private Object createGame(Request req, Response res) throws DataAccessException {
-        var game = new Gson().fromJson(req.body(), GameData.class);
-        int gameID = gameService.createGame(game.gameName());
-        return new Gson().toJson(Map.of("gameID", gameID));
+        try{
+            String authToken = req.headers("Authorization");
+            var game = new Gson().fromJson(req.body(), GameData.class);
+            int gameID = gameService.createGame(game.gameName(), authToken);
+            return new Gson().toJson(Map.of("gameID", gameID));
+        } catch (DataAccessException ex){
+            res.status(ex.StatusCode());
+            return new Gson().toJson(Map.of("message", ex.getMessage()));
+        }
     }
 
     private Object joinGame(Request req, Response res) throws DataAccessException {
-        var game = new Gson().fromJson(req.body(), JoinGameRequest.class);
-        gameService.joinGame(game);
-        return new Gson().toJson(null);
-    }
-
-
-    private Object deleteAuth(Request req, Response res) throws DataAccessException {
-        var username = req.params(":username");
-        var user = userService.getUser(username);
-        if (user != null) {
-//            userService.deleteAuth(id);
-//            webSocketHandler.makeNoise(pet.name(), pet.sound());
-            res.status(204);
-        } else {
-            res.status(404);
+        try{
+            String authToken = req.headers("Authorization");
+            var game = new Gson().fromJson(req.body(), JoinGameRequest.class);
+            gameService.joinGame(game, authToken);
+            return new Gson().toJson(null);
+        } catch (DataAccessException ex){
+            res.status(ex.StatusCode());
+            return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
-        return "";
     }
 
     private Object clear(Request req, Response res) throws DataAccessException {
         userService.clear();
         gameService.clear();
-        res.status(204);
-        return "";
+        res.status(200);
+        return new Gson().toJson(null);
     }
 }

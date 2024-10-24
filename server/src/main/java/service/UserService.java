@@ -17,7 +17,7 @@ public class UserService {
 
     public AuthData registerUser(UserData userData) throws DataAccessException {
         if (userDao.getUser(userData.username()) != null) {
-            throw new DataAccessException(402, "Error: already taken");
+            throw new DataAccessException(403, "Error: already taken");
         }
         // if no database setup -> 400 error bad request
         if (userData.username() == null || userData.password() == null || userData.email() == null) {
@@ -37,18 +37,16 @@ public class UserService {
         return authDao.createAuth(user);
     }
 
-    public void logout(AuthData auth) {}
-
-    public void deleteAuth(String UUID){
-        authDao.deleteAuth(UUID);
-    }
-
-    public UserData getUser(String username) {
-        return userDao.getUser(username);
+    public void logout(String authToken) throws DataAccessException {
+        if (!authDao.verifyAuth(authToken)) {
+            throw new DataAccessException(401, "Error: unauthorized");
+        }
+        authDao.deleteAuth(authToken);
     }
 
     public void clear() throws DataAccessException {
         userDao.clear();
+        authDao.clear();
     }
 
 
