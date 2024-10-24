@@ -38,4 +38,8 @@ public class MemoryAuthDAO implements AuthDAO {
     public String generateToken() {
         return UUID.randomUUID().toString();
     }
+
+    public HashMap<String, UserData> getAuthList(){
+        return auths;
+    }
 }

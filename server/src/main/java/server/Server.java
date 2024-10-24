@@ -109,7 +109,7 @@ public class Server {
         }
     }
 
-    private Object createGame(Request req, Response res) throws DataAccessException {
+    private Object createGame(Request req, Response res) {
         try{
             String authToken = req.headers("Authorization");
             var game = new Gson().fromJson(req.body(), GameData.class);
@@ -121,7 +121,7 @@ public class Server {
         }
     }
 
-    private Object joinGame(Request req, Response res) throws DataAccessException {
+    private Object joinGame(Request req, Response res) {
         try{
             String authToken = req.headers("Authorization");
             var game = new Gson().fromJson(req.body(), JoinGameRequest.class);

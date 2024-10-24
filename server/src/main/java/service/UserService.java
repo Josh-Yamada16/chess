@@ -52,6 +52,10 @@ public class UserService {
         authDao.clear();
     }
 
+    public UserData getUser(UserData user) {
+        return userDao.getUser(user.username());
+    }
+
     public HashMap<String, UserData> getAllUsers() {
         return userDao.getUserList();
     }

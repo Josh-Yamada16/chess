@@ -67,4 +67,11 @@ public class GameService {
         return gameDao.onlyGames();
     }
 
+    public GameData getGame(int gameID) throws DataAccessException {
+        if (gameDao.getGame(gameID) == null){
+            throw new DataAccessException(404, "Error: Game not found");
+        }
+        return gameDao.getGame(gameID);
+    }
+
 }
