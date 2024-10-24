@@ -62,6 +62,7 @@ public class Server {
         res.status(ex.StatusCode());
     }
 
+    // Added exception handling for the login endpoint
     private Object login(Request req, Response res) {
         try{
             var user = new Gson().fromJson(req.body(), UserData.class);
@@ -72,6 +73,7 @@ public class Server {
         }
     }
 
+    // added exception handling for the logout endpoint
     private Object logout(Request req, Response res) {
         try{
             String authToken = req.headers("Authorization");
@@ -93,10 +95,6 @@ public class Server {
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
-
-//    private Object getGame(Request req, Response res) throws DataAccessException {
-//
-//    }
 
     private Object listGames(Request req, Response res) {
         try{
