@@ -1,6 +1,7 @@
 package dataaccess.implementations;
 
 import dataaccess.interfaces.AuthDAO;
+import exception.DataAccessException;
 import model.AuthData;
 import model.UserData;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
 public class MemoryAuthDAO implements AuthDAO {
     final private HashMap<String, UserData> auths = new HashMap<>();
     @Override
-    public void clear() {
+    public void clear() throws DataAccessException {
         auths.clear();
     }
 
