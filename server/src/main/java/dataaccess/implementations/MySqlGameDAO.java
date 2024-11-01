@@ -7,18 +7,18 @@ import exception.DataAccessException;
 import model.AuthData;
 import model.UserData;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.sql.*;
 import java.util.UUID;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 
-public class MySqlAuthDAO implements AuthDAO {
+public class MySqlGameDAO implements AuthDAO {
 
-    public MySqlAuthDAO() throws DataAccessException {
+    public MySqlGameDAO() throws DataAccessException {
         configureDatabase();
     }
 
