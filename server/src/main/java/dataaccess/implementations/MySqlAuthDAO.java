@@ -36,6 +36,7 @@ public class MySqlAuthDAO implements AuthDAO {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT authtoken, json FROM auth WHERE authtoken=?";
             try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
                     return rs.next();
                 }
@@ -43,23 +44,6 @@ public class MySqlAuthDAO implements AuthDAO {
         } catch (Exception e) {
             throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
         }
-    }
-
-    public Collection<Pet> listPets() throws DataAccessException {
-        var result = new ArrayList<Pet>();
-        try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT id, json FROM pet";
-            try (var ps = conn.prepareStatement(statement)) {
-                try (var rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        result.add(readPet(rs));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
-        }
-        return result;
     }
 
     @Override
@@ -79,10 +63,11 @@ public class MySqlAuthDAO implements AuthDAO {
         executeUpdate(statement);
     }
 
-    private UserData getAuth(String authToken) throws DataAccessException {
+    public UserData getAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT authtoken FROM auth WHERE authtoken=?";
             try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
                     var json = rs.getString("json");
                     return new Gson().fromJson(json, UserData.class);
