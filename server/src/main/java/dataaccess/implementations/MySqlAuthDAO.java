@@ -55,6 +55,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
+    // deletes a row depending on the authtoken for logouts
     @Override
     public boolean deleteAuth(String UUID) throws DataAccessException{
         try{

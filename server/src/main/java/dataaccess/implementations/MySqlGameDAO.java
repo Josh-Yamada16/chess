@@ -108,6 +108,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
+    // updates an existing game by adding the username to the correct team and then executing the statment for sql to put in the table
     @Override
     public boolean addPlayer(int gameID, JoinGameRequest.playerColor teamColor, String userName) throws DataAccessException {
         GameData game = this.getGame(gameID);
@@ -128,6 +129,7 @@ public class MySqlGameDAO implements GameDAO {
         return true;
     }
 
+    // The common method that actually implements the statement for the sql
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {

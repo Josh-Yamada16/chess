@@ -60,6 +60,7 @@ public class MySqlUserDAO implements UserDAO {
         return false;
     }
 
+    // gets everything from the users table and puts it into a hashmap to return
     public HashMap<String, UserData> getUserList() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             HashMap<String, UserData> userlst = new HashMap<>();
@@ -80,6 +81,7 @@ public class MySqlUserDAO implements UserDAO {
         }
     }
 
+    // gets the row form the users table by the username and the reuturns an instance of the userdata
     @Override
     public UserData getUser(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
@@ -101,6 +103,7 @@ public class MySqlUserDAO implements UserDAO {
         return null;
     }
 
+    // The common method amongst the DAOs that implements the statement for the sql to implement
     private Object executeUpdate(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
