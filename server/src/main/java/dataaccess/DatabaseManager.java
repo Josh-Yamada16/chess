@@ -4,7 +4,7 @@ import exception.DataAccessException;
 
 import java.sql.*;
 import java.util.Properties;
-
+// It doesn't look like I need to change much from this file but it helps to generate a connection to the server
 public class DatabaseManager {
     private static final String DATABASE_NAME;
     private static final String USER;
