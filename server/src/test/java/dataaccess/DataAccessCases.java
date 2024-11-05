@@ -1,23 +1,27 @@
-package service;
+package dataaccess;
 
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
-import model.*;
+import model.AuthData;
+import model.GameData;
+import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
 import server.Server;
 import server.requests.JoinGameRequest;
+import service.GameService;
+import service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ServiceTests {
+class DataAccessCases {
     static UserDAO userDao;
     static GameDAO gameDao;
     static AuthDAO authDao;
