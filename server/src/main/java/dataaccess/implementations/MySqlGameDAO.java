@@ -171,6 +171,7 @@ public class MySqlGameDAO implements GameDAO {
         """
     };
 
+    // used to configure the table if it doens't already exist
     private void configureGameDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {

@@ -114,6 +114,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
+    // gets a list by selecting all the rows from the table
     @Override
     public HashMap<String, UserData> getAuthList() throws DataAccessException {
         HashMap<String, UserData> authLst = new HashMap<>();
@@ -132,6 +133,7 @@ public class MySqlAuthDAO implements AuthDAO {
         return authLst;
     }
 
+    // Statement to create the table if it doens't already exist
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS auth (
@@ -143,6 +145,7 @@ public class MySqlAuthDAO implements AuthDAO {
             """
     };
 
+    // creating the table if is doesn't yet exist
     private void configureAuthDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {
@@ -155,6 +158,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
+    // geenerates the reandom UUID for the authtoken
     @Override
     public String generateToken() {
         return UUID.randomUUID().toString();
