@@ -1,40 +1,40 @@
 package dataaccess.implementations;
 
-import com.google.gson.Gson;
 import dataaccess.DatabaseManager;
-import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
-import model.AuthData;
 import model.UserData;
 
-import java.sql.*;
-import java.util.UUID;
+import java.sql.SQLException;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 
-public class MySqlAuthDAO implements AuthDAO {
+public class MySqlUserDAO implements UserDAO {
 
-    public MySqlAuthDAO() throws DataAccessException {
+    public MySqlUserDAO() throws DataAccessException {
         configureDatabase();
     }
 
     @Override
-    public AuthData createAuth(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO auth (authtoken, username) VALUES (?, ?)";
-        var json = new Gson().toJson(user);
-        String authToken = generateToken();
-        executeUpdate(statement, authToken, user.username(), json);
-        return new AuthData(authToken, user.username());
+    public void clear() throws DataAccessException {
+        var statement = "TRUNCATE auth";
+        executeUpdate(statement);
     }
 
     @Override
-    public boolean verifyAuth(String authToken) throws DataAccessException {
+    public void addUser(UserData user) throws DataAccessException {
+        var statement = "INSERT INTO auth (username, password, email) VALUES (?, ?, ?)";
+        executeUpdate(statement, user.username(), user.password(), user.email());
+    }
+
+    @Override
+    public boolean matchPassword(UserData user) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authtoken, json FROM auth WHERE authtoken=?";
+            var statement = "SELECT password FROM users WHERE password=?";
             try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1, authToken);
+                ps.setString(1, user.password());
                 try (var rs = ps.executeQuery()) {
                     return rs.next();
                 }
@@ -45,35 +45,24 @@ public class MySqlAuthDAO implements AuthDAO {
     }
 
     @Override
-    public boolean deleteAuth(String UUID) throws DataAccessException{
-        try{
-            var statement = "DELETE FROM auth WHERE UUID=?";
-            executeUpdate(statement, UUID);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void clear() throws DataAccessException {
-        var statement = "TRUNCATE auth";
-        executeUpdate(statement);
-    }
-
-    public UserData getAuth(String authToken) throws DataAccessException {
+    public UserData getUser(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authtoken FROM auth WHERE authtoken=?";
+            var statement = "SELECT * FROM users WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1, authToken);
+                ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {
-                    var json = rs.getString("json");
-                    return new Gson().fromJson(json, UserData.class);
+                    if (rs.next()) {
+                        String name = rs.getString("username");
+                        String pass = rs.getString("password");
+                        String email = rs.getString("email");
+                        return new UserData(name, pass, email);
+                    }
                 }
             }
         } catch (Exception e) {
             throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
         }
+        return null;
     }
 
     private Object executeUpdate(String statement, Object... params) throws DataAccessException {
@@ -85,12 +74,10 @@ public class MySqlAuthDAO implements AuthDAO {
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
-
                 var rs = ps.getGeneratedKeys();
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
-
                 return 0;
             }
         } catch (SQLException e) {
@@ -100,12 +87,10 @@ public class MySqlAuthDAO implements AuthDAO {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS auth (
-              `authtoken` varchar(256) NOT NULL,
+            CREATE TABLE IF NOT EXISTS users (
               'username' varchar(256) NOT NULL,
-              'json' TEXT DEFAULT NULL,
-              INDEX(authtoken),
-              INDEX(username)
+              'password' varchar(256) NOT NULL,
+              'email' varchar(256) NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
@@ -121,10 +106,5 @@ public class MySqlAuthDAO implements AuthDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(500, String.format("Unable to configure database: %s", ex.getMessage()));
         }
-    }
-
-    @Override
-    public String generateToken() {
-        return UUID.randomUUID().toString();
     }
 }

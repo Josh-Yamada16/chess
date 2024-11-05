@@ -1,13 +1,14 @@
 package dataaccess.interfaces;
 
+import exception.DataAccessException;
 import model.UserData;
 
 public interface UserDAO {
-    void clear();
+    void clear() throws DataAccessException;
 
-    void addUser(UserData user);
+    void addUser(UserData user) throws DataAccessException;
 
-    UserData getUser(String username);
+    UserData getUser(String username) throws DataAccessException;
 
-    boolean matchPassword(UserData user);
+    boolean matchPassword(UserData user) throws DataAccessException;
 }
