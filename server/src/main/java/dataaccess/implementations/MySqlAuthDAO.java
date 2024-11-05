@@ -18,6 +18,7 @@ import static java.sql.Types.NULL;
 
 public class MySqlAuthDAO implements AuthDAO {
 
+    // added the catch block to make sure that the throw error doesn't pop up
     public MySqlAuthDAO() {
         try{
             this.configureAuthDatabase();

@@ -15,6 +15,7 @@ import static java.sql.Types.NULL;
 
 public class MySqlUserDAO implements UserDAO {
 
+    // added the catch block so that I don't get an error or a throw error in the test case thing
     public MySqlUserDAO() {
         try{
             DatabaseManager.createDatabase();

@@ -18,6 +18,7 @@ import static java.sql.Types.NULL;
 
 public class MySqlGameDAO implements GameDAO {
 
+    // added the throw block to catch in case there are any bugs that come from the initialization
     public MySqlGameDAO() {
         try{
             configureGameDatabase();
