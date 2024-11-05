@@ -4,6 +4,7 @@ import exception.DataAccessException;
 import model.GameData;
 import server.requests.JoinGameRequest;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public interface GameDAO {
@@ -16,4 +17,6 @@ public interface GameDAO {
     boolean addPlayer(int gameID, JoinGameRequest.playerColor teamColor, String userName) throws DataAccessException;
 
     Collection<GameData> listGames() throws DataAccessException;
+
+    ArrayList<Integer> onlyGames() throws DataAccessException;
 }

@@ -20,7 +20,6 @@ public class DatabaseTests {
 
     private static Class<?> databaseManagerClass;
 
-
     @BeforeAll
     public static void startServer() {
         server = new Server();

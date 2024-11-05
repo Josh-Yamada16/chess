@@ -1,7 +1,7 @@
 package service;
 
-import dataaccess.implementations.MemoryAuthDAO;
-import dataaccess.implementations.MemoryUserDAO;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
 import model.*;
 
@@ -9,10 +9,10 @@ import java.util.HashMap;
 
 public class UserService {
 
-    private final MemoryUserDAO userDao;
-    private final MemoryAuthDAO authDao;
+    private final UserDAO userDao;
+    private final AuthDAO authDao;
 
-    public UserService(MemoryUserDAO userDAO, MemoryAuthDAO authDAO) {
+    public UserService(UserDAO userDAO, AuthDAO authDAO) {
         this.userDao = userDAO;
         this.authDao = authDAO;
     }
@@ -52,11 +52,11 @@ public class UserService {
         authDao.clear();
     }
 
-    public UserData getUser(UserData user) {
+    public UserData getUser(UserData user) throws DataAccessException {
         return userDao.getUser(user.username());
     }
 
-    public HashMap<String, UserData> getAllUsers() {
+    public HashMap<String, UserData> getAllUsers() throws DataAccessException {
         return userDao.getUserList();
     }
 

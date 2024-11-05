@@ -1,7 +1,7 @@
 package service;
 
-import dataaccess.implementations.MemoryAuthDAO;
-import dataaccess.implementations.MemoryGameDAO;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
 import exception.DataAccessException;
 import model.*;
 import server.requests.JoinGameRequest;
@@ -11,10 +11,10 @@ import java.util.Collection;
 
 public class GameService {
 
-    private final MemoryGameDAO gameDao;
-    private final MemoryAuthDAO authDao;
+    private final GameDAO gameDao;
+    private final AuthDAO authDao;
 
-    public GameService(MemoryGameDAO gameDAO, MemoryAuthDAO authDAO) {
+    public GameService(GameDAO gameDAO, AuthDAO authDAO) {
         this.gameDao = gameDAO;
         this.authDao = authDAO;
     }
@@ -62,7 +62,7 @@ public class GameService {
         authDao.clear();
     }
 
-    public ArrayList<Integer> onlyGames(){
+    public ArrayList<Integer> onlyGames() throws DataAccessException{
         return gameDao.onlyGames();
     }
 

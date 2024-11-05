@@ -1,14 +1,16 @@
 package service;
 
-import dataaccess.implementations.*;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
+import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
 import model.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
+import server.Server;
 import server.requests.JoinGameRequest;
-import service.GameService;
-import service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,16 +18,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ServiceTests {
-    static final MemoryUserDAO userDao = new MemoryUserDAO();
-    static final MemoryGameDAO gameDao = new MemoryGameDAO();
-    static final MemoryAuthDAO authDao = new MemoryAuthDAO();
-    static final GameService gameService = new GameService(gameDao, authDao);
-    static final UserService userService = new UserService(userDao, authDao);
+    static UserDAO userDao;
+    static GameDAO gameDao;
+    static AuthDAO authDao;
+    static GameService gameService;
+    static UserService userService;
 
     private static JoinGameRequest createRequest;
     private static UserData existingUser;
     private static UserData newUser;
-    private String existingAuth;
+    private static Server server;
 
     @BeforeAll
     public static void init() {
@@ -35,6 +37,15 @@ class ServiceTests {
         newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
 
         createRequest = new JoinGameRequest(JoinGameRequest.playerColor.WHITE,1);
+
+        server = new Server();
+        var port = server.run(0);
+        gameService = server.getGameService();
+        userService = server.getUserService();
+        authDao = server.getAuthDAO();
+        gameDao = server.getGameDAO();
+        userDao = server.getUserDAO();
+        System.out.println("Started test HTTP server on " + port);
     }
 
     @BeforeEach
@@ -108,7 +119,10 @@ class ServiceTests {
     @Test
     void testGetUser() throws DataAccessException {
         userService.registerUser(existingUser);
-        assertEquals(existingUser, userService.getUser(existingUser));
+        UserData dbUser = userService.getUser(existingUser);
+        assertEquals(existingUser.username(), dbUser.username());
+        assertTrue(BCrypt.checkpw(existingUser.password(), dbUser.password()));
+        assertEquals(existingUser.email(), dbUser.email());
     }
 
     @Test

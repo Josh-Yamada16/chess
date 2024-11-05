@@ -6,8 +6,10 @@ import dataaccess.interfaces.AuthDAO;
 import exception.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -16,13 +18,19 @@ import static java.sql.Types.NULL;
 
 public class MySqlAuthDAO implements AuthDAO {
 
-    public MySqlAuthDAO() throws DataAccessException {
-        configureDatabase();
+    public MySqlAuthDAO() {
+        try{
+            this.configureAuthDatabase();
+        } catch (DataAccessException ignored) {
+            System.out.println(ignored.getMessage());
+        }
     }
 
     @Override
     public AuthData createAuth(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO auth (authtoken, username) VALUES (?, ?)";
+        var statement = "INSERT INTO auth (authtoken, username, json) VALUES (?, ?, ?)";
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        user = new UserData(user.username(), hashedPassword, user.email());
         var json = new Gson().toJson(user);
         String authToken = generateToken();
         executeUpdate(statement, authToken, user.username(), json);
@@ -47,7 +55,7 @@ public class MySqlAuthDAO implements AuthDAO {
     @Override
     public boolean deleteAuth(String UUID) throws DataAccessException{
         try{
-            var statement = "DELETE FROM auth WHERE UUID=?";
+            var statement = "DELETE FROM auth WHERE authtoken=?";
             executeUpdate(statement, UUID);
             return true;
         } catch (Exception e) {
@@ -63,10 +71,11 @@ public class MySqlAuthDAO implements AuthDAO {
 
     public UserData getAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authtoken FROM auth WHERE authtoken=?";
+            var statement = "SELECT json FROM auth WHERE authtoken=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
+                    rs.next();
                     var json = rs.getString("json");
                     return new Gson().fromJson(json, UserData.class);
                 }
@@ -76,12 +85,12 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
-    private Object executeUpdate(String statement, Object... params) throws DataAccessException {
+    private int executeUpdate(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
+                    if (param instanceof String) ps.setString(i + 1, (String) param);
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
@@ -98,20 +107,36 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
+    @Override
+    public HashMap<String, UserData> getAuthList() throws DataAccessException {
+        HashMap<String, UserData> authLst = new HashMap<>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT * FROM auth";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        authLst.put(rs.getString("authtoken"), new Gson().fromJson(rs.getString("json"), UserData.class));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return authLst;
+    }
+
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS auth (
               `authtoken` varchar(256) NOT NULL,
-              'username' varchar(256) NOT NULL,
-              'json' TEXT DEFAULT NULL,
-              INDEX(authtoken),
-              INDEX(username)
+              `username` varchar(256) NOT NULL,
+              `json` TEXT NOT NULL,
+              PRIMARY KEY (`authtoken`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
 
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
+    private void configureAuthDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {

@@ -32,7 +32,7 @@ public class StandardAPITests {
 
     @BeforeAll
     public static void init() {
-        server = new Server();
+        server = new Server(1);
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
 

@@ -2,6 +2,9 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.implementations.*;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
+import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
 import model.*;
 //import server.websocket.WebSocketHandler;
@@ -15,12 +18,23 @@ import java.util.Map;
 public class Server {
     private UserService userService;
     private GameService gameService;
+    private UserDAO userDAO = new MySqlUserDAO();
+    private GameDAO gameDAO = new MySqlGameDAO();
+    private AuthDAO authDAO = new MySqlAuthDAO();
 //    private final WebSocketHandler webSocketHandler;
 
     public Server() {
-        userService = null;
-        gameService = null;
+        userService = new UserService(userDAO, authDAO);
+        gameService = new GameService(gameDAO, authDAO);
 //        webSocketHandler = new WebSocketHandler();
+    }
+
+    public Server(int memory){
+        gameDAO = new MemoryGameDAO();
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        userService = new UserService(userDAO, authDAO);
+        gameService = new GameService(gameDAO, authDAO);
     }
 
     public int run(int port) {
@@ -28,12 +42,6 @@ public class Server {
 
         Spark.staticFiles.location("web");
         Spark.init();
-        MemoryGameDAO gameDAo = new MemoryGameDAO();
-        MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        MemoryUserDAO userDAO = new MemoryUserDAO();
-        userService = new UserService(userDAO, authDAO);
-        gameService = new GameService(gameDAo, authDAO);
-
 //        Spark.webSocket("/ws", webSocketHandler);
 
         Spark.post("/user", this::registerUser); // Registration
@@ -138,5 +146,25 @@ public class Server {
         gameService.clear();
         res.status(200);
         return new Gson().toJson(null);
+    }
+
+    public UserService getUserService() {
+        return userService;
+    }
+
+    public GameService getGameService() {
+        return gameService;
+    }
+
+    public GameDAO getGameDAO() {
+        return gameDAO;
+    }
+
+    public AuthDAO getAuthDAO() {
+        return authDAO;
+    }
+
+    public UserDAO getUserDAO() {
+        return userDAO;
     }
 }

@@ -12,14 +12,8 @@ public class Main {
             if (args.length >= 1) {
                 port = Integer.parseInt(args[0]);
             }
-//            if (args.length >= 2 && args[1].equals("sql")) {
-//                changeDatAcc = true;
-//            }
-
             var server = new Server();
             server.run(port);
-//            if (changeDatAcc) {
-//            }
 
             System.out.printf("Server started on port %d%n", server.port());
 

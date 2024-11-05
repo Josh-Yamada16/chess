@@ -2,6 +2,8 @@ package dataaccess.implementations;
 
 import dataaccess.interfaces.UserDAO;
 import model.UserData;
+import org.eclipse.jetty.server.Authentication;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.HashMap;
 
@@ -24,10 +26,13 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     public boolean matchPassword(UserData user) {
-        return users.get(user.username()).password().equals(user.password());
+        String hashedpass = users.get(user.username()).password();
+        return BCrypt.checkpw(user.password(), hashedpass);
     }
 
     public void addUser(UserData user) {
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        user = new UserData(user.username(), hashedPassword, user.email());
         users.put(user.username(), user);
     }
 

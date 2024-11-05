@@ -5,7 +5,9 @@ import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
 import model.UserData;
 
+import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -13,32 +15,62 @@ import static java.sql.Types.NULL;
 
 public class MySqlUserDAO implements UserDAO {
 
-    public MySqlUserDAO() throws DataAccessException {
-        configureDatabase();
+    public MySqlUserDAO() {
+        try{
+            DatabaseManager.createDatabase();
+            configureUserDatabase();
+        } catch (DataAccessException ignored) {
+            System.out.println(ignored.getMessage());
+        }
     }
 
     @Override
     public void clear() throws DataAccessException {
-        var statement = "TRUNCATE auth";
+        var statement = "TRUNCATE users";
         executeUpdate(statement);
     }
 
     @Override
     public void addUser(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO auth (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, user.username(), user.password(), user.email());
+        var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        executeUpdate(statement, user.username(), hashedPassword, user.email());
     }
 
     @Override
     public boolean matchPassword(UserData user) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT password FROM users WHERE password=?";
+            var statement = "SELECT password FROM users WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1, user.password());
+                ps.setString(1, user.username());
                 try (var rs = ps.executeQuery()) {
-                    return rs.next();
+                    if (rs.next()) {
+                        String ogPassword = rs.getString("password");
+                        return BCrypt.checkpw(user.password(), ogPassword);
+                    }
                 }
             }
+        } catch (Exception e) {
+            throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return false;
+    }
+
+    public HashMap<String, UserData> getUserList() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            HashMap<String, UserData> userlst = new HashMap<>();
+            var statement = "SELECT * FROM users";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String name = rs.getString("username");
+                        String pass = rs.getString("password");
+                        String email = rs.getString("email");
+                        userlst.put(name, new UserData(name, pass, email));
+                    }
+                }
+            }
+            return userlst;
         } catch (Exception e) {
             throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
         }
@@ -70,7 +102,7 @@ public class MySqlUserDAO implements UserDAO {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
+                    if (param instanceof String) ps.setString(i + 1, (String) param);
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
@@ -88,15 +120,14 @@ public class MySqlUserDAO implements UserDAO {
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS users (
-              'username' varchar(256) NOT NULL,
-              'password' varchar(256) NOT NULL,
-              'email' varchar(256) NOT NULL
+              `username` varchar(256) NOT NULL,
+              `password` varchar(256) NOT NULL,
+              `email` varchar(256) NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
 
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
+    private void configureUserDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
