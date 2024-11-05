@@ -25,12 +25,14 @@ public class MySqlUserDAO implements UserDAO {
         }
     }
 
+    // using truncate to delete all the rows in the users table
     @Override
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE users";
         executeUpdate(statement);
     }
 
+    // inserting into the users table with the username, **hashed password, and email
     @Override
     public void addUser(UserData user) throws DataAccessException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";

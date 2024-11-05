@@ -27,6 +27,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
+    // inserting into the table the authtoken, username, and the userdata json string for easy access
     @Override
     public AuthData createAuth(UserData user) throws DataAccessException {
         var statement = "INSERT INTO auth (authtoken, username, json) VALUES (?, ?, ?)";

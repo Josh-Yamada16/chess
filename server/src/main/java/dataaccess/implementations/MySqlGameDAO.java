@@ -40,6 +40,7 @@ public class MySqlGameDAO implements GameDAO {
         return executeUpdate(statement, null, null, gameName, chessgame);
     }
 
+    // Selecting all rows from the db and returning a collection of gamesdatas
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
         Collection<GameData> gamelst = new ArrayList<>();
