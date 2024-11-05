@@ -40,6 +40,7 @@ public class MySqlUserDAO implements UserDAO {
         executeUpdate(statement, user.username(), hashedPassword, user.email());
     }
 
+    // gets the hashed password by the username and compares it to the unhashed version using BCrypt
     @Override
     public boolean matchPassword(UserData user) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {

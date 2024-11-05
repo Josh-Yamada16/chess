@@ -39,6 +39,7 @@ public class MySqlAuthDAO implements AuthDAO {
         return new AuthData(authToken, user.username());
     }
 
+    // gets the authtoken and userdata string by the authtoken in order to verify the identity of the person
     @Override
     public boolean verifyAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {

@@ -64,6 +64,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
+    // Gets just the gameids from the games table for a list of just ids
     @Override
     public ArrayList<Integer> onlyGames() throws DataAccessException {
         ArrayList<Integer> gameIds = new ArrayList<>();
@@ -82,6 +83,7 @@ public class MySqlGameDAO implements GameDAO {
         return gameIds;
     }
 
+    // gets all rows in the games table then makes them into game datas and sticks them in a list
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         GameData gamedat = null;
