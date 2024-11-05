@@ -67,12 +67,14 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
+    // clears all the rows in the auth table by truncating everything
     @Override
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE auth";
         executeUpdate(statement);
     }
 
+    // this function is really only used to get the userdata based on the authtoken
     public UserData getAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT json FROM auth WHERE authtoken=?";
@@ -89,6 +91,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
+    // This is the common method to execute the actual statement for sql
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {

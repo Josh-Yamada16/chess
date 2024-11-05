@@ -124,6 +124,7 @@ public class MySqlUserDAO implements UserDAO {
         }
     }
 
+    // The create statement just in case that the table isn't already there in the database
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS users (
@@ -134,6 +135,7 @@ public class MySqlUserDAO implements UserDAO {
             """
     };
 
+    // method is for creating the table just in case it doesn't already exist
     private void configureUserDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {

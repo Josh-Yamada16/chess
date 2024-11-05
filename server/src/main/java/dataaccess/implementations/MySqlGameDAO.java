@@ -157,6 +157,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
+    // statment is for creating the table if it doesn't already exist
     private final String[] createStatements = {
         """
         CREATE TABLE IF NOT EXISTS games (
