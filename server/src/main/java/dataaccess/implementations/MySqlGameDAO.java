@@ -6,7 +6,7 @@ import dataaccess.DatabaseManager;
 import dataaccess.interfaces.GameDAO;
 import exception.DataAccessException;
 import model.GameData;
-import server.requests.JoinGameRequest;
+import requests.JoinGameRequest;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

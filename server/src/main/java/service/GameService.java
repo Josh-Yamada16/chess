@@ -4,7 +4,7 @@ import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import exception.DataAccessException;
 import model.*;
-import server.requests.JoinGameRequest;
+import requests.JoinGameRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;

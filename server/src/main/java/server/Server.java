@@ -8,7 +8,7 @@ import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
 import model.*;
 //import server.websocket.WebSocketHandler;
-import server.requests.*;
+import requests.JoinGameRequest;
 import service.*;
 
 import spark.*;

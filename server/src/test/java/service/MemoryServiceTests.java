@@ -1,5 +1,8 @@
 package service;
 
+import dataaccess.implementations.MemoryAuthDAO;
+import dataaccess.implementations.MemoryGameDAO;
+import dataaccess.implementations.MemoryUserDAO;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
@@ -9,8 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
-import server.Server;
-import server.requests.JoinGameRequest;
+import requests.JoinGameRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,6 @@ class MemoryServiceTests {
     private static JoinGameRequest createRequest;
     private static UserData existingUser;
     private static UserData newUser;
-    private static Server server;
 
     @BeforeAll
     public static void init() {
@@ -38,14 +39,11 @@ class MemoryServiceTests {
 
         createRequest = new JoinGameRequest(JoinGameRequest.playerColor.WHITE,1);
 
-        server = new Server(1);
-        var port = server.run(0);
-        gameService = server.getGameService();
-        userService = server.getUserService();
-        authDao = server.getAuthDAO();
-        gameDao = server.getGameDAO();
-        userDao = server.getUserDAO();
-        System.out.println("Started test HTTP server on " + port);
+        authDao = new MemoryAuthDAO();
+        gameDao = new MemoryGameDAO();
+        userDao = new MemoryUserDAO();
+        gameService = new GameService(gameDao, authDao);
+        userService = new UserService(userDao, authDao);
     }
 
     @BeforeEach

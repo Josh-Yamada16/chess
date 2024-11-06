@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
 import server.Server;
-import server.requests.JoinGameRequest;
+import requests.JoinGameRequest;
 import service.GameService;
 import service.UserService;
 
@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DataAccessCases {
+class SqlUserTest {
     static UserDAO userDao;
     static GameDAO gameDao;
     static AuthDAO authDao;

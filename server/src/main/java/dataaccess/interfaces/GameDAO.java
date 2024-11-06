@@ -2,7 +2,7 @@ package dataaccess.interfaces;
 
 import exception.DataAccessException;
 import model.GameData;
-import server.requests.JoinGameRequest;
+import requests.JoinGameRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;

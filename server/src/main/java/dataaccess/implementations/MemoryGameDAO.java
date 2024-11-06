@@ -3,7 +3,7 @@ package dataaccess.implementations;
 import chess.ChessGame;
 import dataaccess.interfaces.GameDAO;
 import model.GameData;
-import server.requests.JoinGameRequest;
+import requests.JoinGameRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;

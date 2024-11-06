@@ -57,11 +57,10 @@ public class MySqlAuthDAO implements AuthDAO {
 
     // deletes a row depending on the authtoken for logouts
     @Override
-    public boolean deleteAuth(String UUID) throws DataAccessException{
+    public boolean deleteAuth(String authToken) throws DataAccessException{
         try{
             var statement = "DELETE FROM auth WHERE authtoken=?";
-            executeUpdate(statement, UUID);
-            return true;
+            return executeUpdate(statement, authToken) == 0;
         } catch (Exception e) {
             return false;
         }
