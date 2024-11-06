@@ -21,7 +21,7 @@ public class MySqlGameDAO implements GameDAO {
     // added the throw block to catch in case there are any bugs that come from the initialization
     public MySqlGameDAO() {
         try{
-            configureGameDatabase();
+            DatabaseManager.configureDatabase(createStatements);
         } catch (Exception ignored){
             System.out.println(ignored.getMessage());
         }
@@ -110,11 +110,11 @@ public class MySqlGameDAO implements GameDAO {
 
     // updates an existing game by adding the username to the correct team and then executing the statment for sql to put in the table
     @Override
-    public boolean addPlayer(int gameID, JoinGameRequest.playerColor teamColor, String userName) throws DataAccessException {
+    public boolean addPlayer(int gameID, JoinGameRequest.PlayerColor teamColor, String userName) throws DataAccessException {
         GameData game = this.getGame(gameID);
         var statement = "UPDATE games SET whiteusername=?, blackusername=?, gamename=?, chessgame=? WHERE gameid=?";
         var gamejson = new Gson().toJson(game);
-        if (teamColor == JoinGameRequest.playerColor.WHITE){
+        if (teamColor == JoinGameRequest.PlayerColor.WHITE){
             if (game.whiteUsername() != null){
                 return false;
             }
@@ -170,17 +170,4 @@ public class MySqlGameDAO implements GameDAO {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     };
-
-    // used to configure the table if it doens't already exist
-    private void configureGameDatabase() throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
 }

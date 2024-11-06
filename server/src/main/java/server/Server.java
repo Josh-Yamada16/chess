@@ -67,7 +67,7 @@ public class Server {
     }
 
     private void exceptionHandler(DataAccessException ex, Request req, Response res) {
-        res.status(ex.StatusCode());
+        res.status(ex.statusCode());
     }
 
     // Added exception handling for the login endpoint
@@ -76,7 +76,7 @@ public class Server {
             var user = new Gson().fromJson(req.body(), UserData.class);
             return new Gson().toJson(userService.loginUser(user));
         } catch (DataAccessException ex){
-            res.status(ex.StatusCode());
+            res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
@@ -88,7 +88,7 @@ public class Server {
             userService.logout(authToken);
             return new Gson().toJson(null);
         } catch (DataAccessException ex){
-            res.status(ex.StatusCode());
+            res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
@@ -100,7 +100,7 @@ public class Server {
             AuthData auth = userService.registerUser(user);
             return new Gson().toJson(auth);
         } catch (DataAccessException ex){
-            res.status(ex.StatusCode());
+            res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
@@ -112,7 +112,7 @@ public class Server {
             var list = gameService.listGames(authToken).toArray();
             return new Gson().toJson(Map.of("games", list));
         } catch (DataAccessException ex){
-            res.status(ex.StatusCode());
+            res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
@@ -124,7 +124,7 @@ public class Server {
             int gameID = gameService.createGame(game.gameName(), authToken);
             return new Gson().toJson(Map.of("gameID", gameID));
         } catch (DataAccessException ex){
-            res.status(ex.StatusCode());
+            res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }
@@ -136,7 +136,7 @@ public class Server {
             gameService.joinGame(game, authToken);
             return new Gson().toJson(null);
         } catch (DataAccessException ex){
-            res.status(ex.StatusCode());
+            res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
         }
     }

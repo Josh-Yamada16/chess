@@ -34,7 +34,7 @@ class SqlGameTest {
 
         newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
 
-        createRequest = new JoinGameRequest(JoinGameRequest.playerColor.WHITE,1);
+        createRequest = new JoinGameRequest(JoinGameRequest.PlayerColor.WHITE,1);
 
         server = new Server();
         server.run(0);
@@ -62,7 +62,7 @@ class SqlGameTest {
     void failCreateGame() throws DataAccessException {
         gameDao.createGame("newGame");
         DataAccessException ex = assertThrows(DataAccessException.class,() -> gameDao.createGame(null));
-        assertEquals(500, ex.StatusCode());
+        assertEquals(500, ex.statusCode());
     }
 
     @Test

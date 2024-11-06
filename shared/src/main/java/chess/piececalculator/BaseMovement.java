@@ -1,4 +1,4 @@
-package chess.PieceCalculators;
+package chess.piececalculator;
 
 import chess.ChessBoard;
 import chess.ChessMove;
@@ -20,21 +20,28 @@ public class BaseMovement {
         int col = position.getColumn();
         int multiplier = 1;
         do {
-            ChessPosition possiblePos = new ChessPosition(8-row+(rowInc * multiplier), 1+col+(colInc * multiplier));
+            ChessPosition possiblePos = new ChessPosition(8-row+(rowInc * multiplier),
+                    1+col+(colInc * multiplier));
             if (isValid(possiblePos)){
                 moveSet.add(new ChessMove(this.position, possiblePos, null));
-                if (board.getPiece(possiblePos) != null) break;
+                if (board.getPiece(possiblePos) != null) {
+                    break;
+                }
             }
             multiplier += 1;
-        } while (!blocked && slide && 8-row+(rowInc * multiplier) < 9 && 8-row+(rowInc * multiplier) > 0 && 1+col+(colInc * multiplier) < 9 && 1+col+(colInc * multiplier) > 0);
+        } while (!blocked && slide && 8-row+(rowInc * multiplier) < 9 && 8-row+(rowInc * multiplier) > 0 &&
+                1+col+(colInc * multiplier) < 9 && 1+col+(colInc * multiplier) > 0);
         blocked = false;
     }
 
     public boolean isValid(ChessPosition possiblePos){
-        if (possiblePos.getRow() > 7 || possiblePos.getColumn() > 7 || possiblePos.getRow() < 0 || possiblePos.getColumn() < 0)
+        if (possiblePos.getRow() > 7 || possiblePos.getColumn() > 7 || possiblePos.getRow() < 0 ||
+                possiblePos.getColumn() < 0){
             return false;
-        if (board.getPiece(possiblePos) == null)
+        }
+        if (board.getPiece(possiblePos) == null){
             return true;
+        }
         if (board.getPiece(possiblePos).getTeamColor() == board.getPiece(this.position).getTeamColor()) {
             blocked = true;
             return false;

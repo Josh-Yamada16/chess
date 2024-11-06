@@ -1,9 +1,7 @@
-package chess.PieceCalculators;
+package chess.piececalculator;
 
 import chess.*;
-import com.sun.source.tree.WhileLoopTree;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -115,23 +113,26 @@ public class PawnRule{
                 if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.WHITE){
                     end = new ChessPosition(8-row+1, 1+column+1);
                 }
-                else
+                else{
                     end = new ChessPosition(8-row-1, 1+column+1);
+                }
             }
             else{
                 if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.WHITE){
                     end = new ChessPosition(8-row+1, 1+column-1);
                 }
-                else
+                else{
                     end = new ChessPosition(8-row-1, 1+column-1);
+                }
             }
         }
         else{
             if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.WHITE){
                 end = new ChessPosition(8-row+1, 1+column);
             }
-            else
+            else{
                 end = new ChessPosition(8-row-1, 1+column);
+            }
         }
         moveSet.add(new ChessMove(this.position, end, ChessPiece.PieceType.QUEEN));
         moveSet.add(new ChessMove(this.position, end, ChessPiece.PieceType.BISHOP));

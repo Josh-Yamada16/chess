@@ -1,21 +1,21 @@
 package requests;
 
 public class JoinGameRequest {
-    private final playerColor playerColor;
+    private final PlayerColor playerColor;
     private final int gameID;
 
-    public JoinGameRequest(playerColor playerColor, int gameID) {
+    public JoinGameRequest(PlayerColor playerColor, int gameID) {
         this.playerColor = playerColor;
         this.gameID = gameID;
     }
 
-    public enum playerColor { WHITE, BLACK }
+    public enum PlayerColor { WHITE, BLACK }
 
     public int getGameID() {
         return gameID;
     }
 
-    public JoinGameRequest.playerColor getPlayerColor() {
+    public JoinGameRequest.PlayerColor getPlayerColor() {
         return playerColor;
     }
 }

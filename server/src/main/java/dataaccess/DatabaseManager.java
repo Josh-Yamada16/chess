@@ -50,6 +50,17 @@ public class DatabaseManager {
         }
     }
 
+    public static void configureDatabase(String[] createStatements) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(500, String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+    }
     /**
      * Create a connection to the database and sets the catalog based upon the
      * properties specified in db.properties. Connections to the database should

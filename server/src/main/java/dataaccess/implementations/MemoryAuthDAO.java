@@ -32,8 +32,8 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     @Override
-    public boolean deleteAuth(String UUID) {
-        return auths.remove(UUID) != null;
+    public boolean deleteAuth(String uuid) {
+        return auths.remove(uuid) != null;
     }
 
     public String generateToken() {

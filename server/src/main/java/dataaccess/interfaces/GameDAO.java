@@ -14,7 +14,7 @@ public interface GameDAO {
 
     GameData getGame(int gameID) throws DataAccessException;
 
-    boolean addPlayer(int gameID, JoinGameRequest.playerColor teamColor, String userName) throws DataAccessException;
+    boolean addPlayer(int gameID, JoinGameRequest.PlayerColor teamColor, String userName) throws DataAccessException;
 
     Collection<GameData> listGames() throws DataAccessException;
 

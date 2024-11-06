@@ -38,7 +38,7 @@ class SqlUserTest {
 
         newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
 
-        createRequest = new JoinGameRequest(JoinGameRequest.playerColor.WHITE,1);
+        createRequest = new JoinGameRequest(JoinGameRequest.PlayerColor.WHITE,1);
 
         server = new Server();
         server.run(0);

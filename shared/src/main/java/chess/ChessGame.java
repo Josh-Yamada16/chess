@@ -55,7 +55,7 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         // check if startposition is a null
         ChessPiece piece = board.getPiece(startPosition);
-        if (piece == null){
+        if (piece == null) {
             return null;
         }
         // get moveset of the piece in question
@@ -79,7 +79,7 @@ public class ChessGame {
     }
 
 
-    public boolean moveInSet(ChessMove move, Collection<ChessMove> validMoves){
+    public boolean moveInSet(ChessMove move, Collection<ChessMove> validMoves) {
         // checks if the moe is in the valid moves moveset
         for (ChessMove validMove : validMoves) {
             // if the move is in the moveset -> return true
@@ -98,55 +98,61 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         // check if move is in the collection from validmoves or it is that team's turn otherwise throws exception
-        if (board.getPiece(move.getStartPosition()) != null){
+        if (board.getPiece(move.getStartPosition()) != null) {
             // checks if the move in question is in the valid move set and if that is the piece's turn
-            if (moveInSet(move, validMoves(move.getStartPosition())) && board.getPiece(move.getStartPosition()).getTeamColor() == teamTurn) {
+            if (moveInSet(move, validMoves(move.getStartPosition())) &&
+                    board.getPiece(move.getStartPosition()).getTeamColor() == teamTurn) {
                 board.addPiece(move.getEndPosition(), board.getPiece(move.getStartPosition()));
                 // checks if the piece is going to be promoted or not for a pawn
-                if (move.getPromotionPiece() != null){
-                    board.addPiece(move.getEndPosition(), new ChessPiece(board.getPiece(move.getStartPosition()).getTeamColor(), move.getPromotionPiece()));
+                if (move.getPromotionPiece() != null) {
+                    board.addPiece(move.getEndPosition(),
+                    new ChessPiece(board.getPiece(move.getStartPosition()).getTeamColor(), move.getPromotionPiece()));
                 }
                 board.removePiece(move.getStartPosition());
-            }
-            else{
+            } else {
                 throw new InvalidMoveException();
             }
             this.round++;
             // sets whose turn is next depending on the round
             if (this.round % 2 == 0) {
                 setTeamTurn(TeamColor.WHITE);
-            }
-            else{
+            } else {
                 setTeamTurn(TeamColor.BLACK);
             }
-        }
-        else{
+        } else {
             throw new InvalidMoveException();
         }
     }
 
-    public boolean kingGettingAttacked(TeamColor team){
+    public boolean kingGettingAttacked(TeamColor team) {
         ChessPosition kingPos = board.getKingPos(team);
         // loop through every piece on the board and find the opposite teams pieces
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 // make a fake piece to test it on the fake board
-                ChessPiece queryPiece = board.getPiece(new ChessPosition(8-i, j+1));
-                if (queryPiece != null){
-                    if (queryPiece.getTeamColor() != team){
-                        // loop through their moveset and see if the king's position is in their getEndposition
-                        var moveSet = queryPiece.pieceMoves(board, new ChessPosition(8-i, j+1));
-                        for (ChessMove item : moveSet) {
-                            // if getEndPosition() is == to king position then return true
-                            if (item.getEndPosition().equals(kingPos)){
-                                return true;
-                            }
-                        }
-                    }
+                if (fakeBoardCheck(i, j, team, kingPos) == 1){
+                    return true;
                 }
             }
         }
         return false;
+    }
+
+    private int fakeBoardCheck(int i, int j, TeamColor team, ChessPosition kingPos) {
+        ChessPiece queryPiece = board.getPiece(new ChessPosition(8 - i, j + 1));
+        if (queryPiece != null) {
+            if (queryPiece.getTeamColor() != team) {
+                // loop through their moveset and see if the king's position is in their getEndposition
+                var moveSet = queryPiece.pieceMoves(board, new ChessPosition(8 - i, j + 1));
+                for (ChessMove item : moveSet) {
+                    // if getEndPosition() is == to king position then return true
+                    if (item.getEndPosition().equals(kingPos)) {
+                        return 1;
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     /**
@@ -168,25 +174,28 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         // if isInCheck() and validMoves() is empty for all pieces then return true
-        int count = 0;
-        Collection<ChessPosition> positions = board.getNumberOfPieces(teamColor);
         // the team has to be in check in order for it to be checkmate
         if (isInCheck(teamColor)) {
-            for (ChessPosition pos : positions){
-                // counting how many of the pieces have an empty valid moveset
-                if (validMoves(pos).isEmpty()){
-                    count++;
-                }
-            }
-            // if all the pieces have nothing in the valid moveset -> the team is in checkmate
-            if (count == positions.size()){
-                return true;
-            }
-            else{
-                return false;
-            }
+            return checkPositions(teamColor);
         }
         return false;
+    }
+
+    private boolean checkPositions(TeamColor teamColor) {
+        int count = 0;
+        Collection<ChessPosition> positions = board.getNumberOfPieces(teamColor);
+        for (ChessPosition pos : positions) {
+            // counting how many of the pieces have an empty valid moveset
+            if (validMoves(pos).isEmpty()) {
+                count++;
+            }
+        }
+        // if all the pieces have nothing in the valid moveset -> the team is in checkmate
+        if (count == positions.size()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -198,23 +207,9 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         // if isInCheck() is false and validMoves() is empty for all pieces then return true
-        int count = 0;
-        Collection<ChessPosition> positions = board.getNumberOfPieces(teamColor);
         // the team cannot be in check in order for a stalemate to happen
         if (!isInCheck(teamColor)) {
-            for (ChessPosition pos : positions){
-                // counting how many of the pieces have an empty moveset
-                if (validMoves(pos).isEmpty()){
-                    count++;
-                }
-            }
-            // if all the pieces have an empty moveset -> the teams are in stalemate
-            if (count == positions.size()){
-                return true;
-            }
-            else{
-                return false;
-            }
+            return checkPositions(teamColor);
         }
         return false;
     }

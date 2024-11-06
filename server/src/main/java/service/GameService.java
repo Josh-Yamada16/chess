@@ -36,7 +36,7 @@ public class GameService {
         if (game.getGameID() == 0 || game.getPlayerColor() == null){
             throw new DataAccessException(400, "Error: bad request");
         }
-        if (game.getPlayerColor() == JoinGameRequest.playerColor.WHITE){
+        if (game.getPlayerColor() == JoinGameRequest.PlayerColor.WHITE){
             if (gameDao.getGame(game.getGameID()).whiteUsername() != null) {
                 throw new DataAccessException(403, "Error: already taken");
             }

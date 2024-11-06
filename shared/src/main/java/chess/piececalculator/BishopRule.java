@@ -1,9 +1,8 @@
-package chess.PieceCalculators;
+package chess.piececalculator;
 
 import chess.ChessBoard;
 import chess.ChessMove;
 import chess.ChessPosition;
-import chess.PieceCalculators.BaseMovement;
 
 import java.util.ArrayList;
 import java.util.Collection;

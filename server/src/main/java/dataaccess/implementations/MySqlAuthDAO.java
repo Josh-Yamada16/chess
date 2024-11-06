@@ -21,7 +21,7 @@ public class MySqlAuthDAO implements AuthDAO {
     // added the catch block to make sure that the throw error doesn't pop up
     public MySqlAuthDAO() {
         try{
-            this.configureAuthDatabase();
+            DatabaseManager.configureDatabase(createStatements);
         } catch (DataAccessException ignored) {
             System.out.println(ignored.getMessage());
         }
@@ -96,8 +96,12 @@ public class MySqlAuthDAO implements AuthDAO {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String) ps.setString(i + 1, (String) param);
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                    if (param instanceof String) {
+                        ps.setString(i + 1, (String) param);
+                    }
+                    else if (param == null) {
+                        ps.setNull(i + 1, NULL);
+                    }
                 }
                 ps.executeUpdate();
 
@@ -145,7 +149,7 @@ public class MySqlAuthDAO implements AuthDAO {
     };
 
     // creating the table if is doesn't yet exist
-    private void configureAuthDatabase() throws DataAccessException {
+    public void configureAuthDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {

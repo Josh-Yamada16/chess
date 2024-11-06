@@ -37,7 +37,7 @@ class MemoryServiceTests {
 
         newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
 
-        createRequest = new JoinGameRequest(JoinGameRequest.playerColor.WHITE,1);
+        createRequest = new JoinGameRequest(JoinGameRequest.PlayerColor.WHITE,1);
 
         authDao = new MemoryAuthDAO();
         gameDao = new MemoryGameDAO();
@@ -68,7 +68,7 @@ class MemoryServiceTests {
         var user = new UserData("fourarms", "Shoji#16", "fourarms216@gmail.com");
         userService.registerUser(user);
         DataAccessException ex = assertThrows(DataAccessException.class,() -> userService.registerUser(user));
-        assertEquals(403, ex.StatusCode());
+        assertEquals(403, ex.statusCode());
         assertEquals("Error: already taken", ex.getMessage());
     }
 
@@ -87,7 +87,7 @@ class MemoryServiceTests {
         AuthData auth = userService.registerUser(existingUser);
         userService.logout(auth.authToken());
         DataAccessException ex = assertThrows(DataAccessException.class,() -> userService.loginUser(newUser));
-        assertEquals(401, ex.StatusCode());
+        assertEquals(401, ex.statusCode());
         assertEquals("Error: unauthorized", ex.getMessage());
     }
 
@@ -103,7 +103,7 @@ class MemoryServiceTests {
     void unauthorizedLogout() throws DataAccessException {
         userService.registerUser(existingUser);
         DataAccessException ex = assertThrows(DataAccessException.class,() -> userService.logout("123"));
-        assertEquals(401, ex.StatusCode());
+        assertEquals(401, ex.statusCode());
         assertEquals("Error: unauthorized", ex.getMessage());
     }
 
@@ -142,7 +142,7 @@ class MemoryServiceTests {
     void failCreateGame() throws DataAccessException {
         userService.registerUser(existingUser);
         DataAccessException ex = assertThrows(DataAccessException.class,() -> gameService.createGame("newGame", "123"));
-        assertEquals(401, ex.StatusCode());
+        assertEquals(401, ex.statusCode());
         assertEquals("Error: unauthorized", ex.getMessage());
     }
 
@@ -158,8 +158,9 @@ class MemoryServiceTests {
     void failJoinGame() throws DataAccessException {
         AuthData auth = userService.registerUser(existingUser);
         int gameID = gameService.createGame("newGame", auth.authToken());
-        DataAccessException ex = assertThrows(DataAccessException.class,() -> gameService.joinGame(new JoinGameRequest(null, gameID), auth.authToken()));
-        assertEquals(400, ex.StatusCode());
+        DataAccessException ex = assertThrows(DataAccessException.class,() ->
+                gameService.joinGame(new JoinGameRequest(null, gameID), auth.authToken()));
+        assertEquals(400, ex.statusCode());
         assertEquals("Error: bad request", ex.getMessage());
     }
 
@@ -180,7 +181,7 @@ class MemoryServiceTests {
         AuthData auth = userService.registerUser(existingUser);
         gameService.createGame("newGame", auth.authToken());
         DataAccessException ex = assertThrows(DataAccessException.class,() -> gameService.listGames("123"));
-        assertEquals(401, ex.StatusCode());
+        assertEquals(401, ex.statusCode());
         assertEquals("Error: unauthorized", ex.getMessage());
     }
 
@@ -221,7 +222,7 @@ class MemoryServiceTests {
         AuthData auth = userService.registerUser(existingUser);
         gameService.createGame("newGame", auth.authToken());
         DataAccessException ex = assertThrows(DataAccessException.class,() -> gameService.getGame(2));
-        assertEquals(404, ex.StatusCode());
+        assertEquals(404, ex.statusCode());
         assertEquals("Error: Game not found", ex.getMessage());
     }
 }

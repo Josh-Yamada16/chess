@@ -19,7 +19,7 @@ public class MySqlUserDAO implements UserDAO {
     public MySqlUserDAO() {
         try{
             DatabaseManager.createDatabase();
-            configureUserDatabase();
+            DatabaseManager.configureDatabase(createStatements);
         } catch (DataAccessException ignored) {
             System.out.println(ignored.getMessage());
         }
@@ -109,8 +109,12 @@ public class MySqlUserDAO implements UserDAO {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String) ps.setString(i + 1, (String) param);
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                    if (param instanceof String) {
+                        ps.setString(i + 1, (String) param);
+                    }
+                    else if (param == null) {
+                        ps.setNull(i + 1, NULL);
+                    }
                 }
                 ps.executeUpdate();
                 var rs = ps.getGeneratedKeys();
@@ -134,17 +138,4 @@ public class MySqlUserDAO implements UserDAO {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
-
-    // method is for creating the table just in case it doesn't already exist
-    private void configureUserDatabase() throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
 }

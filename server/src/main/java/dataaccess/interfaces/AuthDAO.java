@@ -13,7 +13,7 @@ public interface AuthDAO {
 
     boolean verifyAuth(String authToken) throws DataAccessException;
 
-    boolean deleteAuth(String UUID) throws DataAccessException;
+    boolean deleteAuth(String uuid) throws DataAccessException;
 
     String generateToken();
 

@@ -34,9 +34,9 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public boolean addPlayer(int gameID, JoinGameRequest.playerColor teamColor, String userName) {
+    public boolean addPlayer(int gameID, JoinGameRequest.PlayerColor teamColor, String userName) {
         GameData game = games.get(gameID);
-        if (teamColor == JoinGameRequest.playerColor.WHITE){
+        if (teamColor == JoinGameRequest.PlayerColor.WHITE){
             if (game.whiteUsername() != null){
                 return false;
             }
