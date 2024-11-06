@@ -110,29 +110,24 @@ class SqlGameTest {
         assertNull(gameDao.getGame(2));
     }
 
-//    @Test
-//    void testAddPlayer() throws DataAccessException {
-//        AuthData auth = userService.registerUser(existingUser);
-//        int gameID = gameService.createGame("newGame", auth.authToken());
-//        gameService.joinGame(createRequest, auth.authToken());
-//        assertEquals(existingUser.username(), gameService.getGame(gameID).whiteUsername());
-//    }
-//
-//    @Test
-//    void failAddPlayer() throws DataAccessException {
-//        AuthData auth = userService.registerUser(existingUser);
-//        int gameID = gameService.createGame("newGame", auth.authToken());
-//        DataAccessException ex = assertThrows(DataAccessException.class,() -> gameService.joinGame(new JoinGameRequest(null, gameID), auth.authToken()));
-//        assertEquals(400, ex.StatusCode());
-//        assertEquals("Error: bad request", ex.getMessage());
-//    }
-//
-//    @Test
-//    void testClear() throws DataAccessException{
-//        AuthData auth = userService.registerUser(existingUser);
-//        gameService.createGame("newGame", auth.authToken());
-//        gameService.clear();
-//        assertEquals(0, gameService.onlyGames().size());
-//        assertEquals(0, authDao.getAuthList().size());
-//    }
+    @Test
+    void testAddPlayer() throws DataAccessException {
+        int gameID = gameDao.createGame("newGame");
+        gameDao.addPlayer(gameID, createRequest.getPlayerColor(), existingUser.username());
+        assertEquals(existingUser.username(), gameDao.getGame(gameID).whiteUsername());
+    }
+
+    @Test
+    void failAddPlayer() throws DataAccessException {
+        int gameID = gameDao.createGame("newGame");
+        gameDao.addPlayer(gameID, createRequest.getPlayerColor(), existingUser.username());
+        assertFalse(gameDao.addPlayer(gameID, createRequest.getPlayerColor(), existingUser.username()));
+    }
+
+    @Test
+    void testClear() throws DataAccessException{
+        gameDao.createGame("newGame");
+        gameDao.clear();
+        assertEquals(0, gameDao.onlyGames().size());
+    }
 }
