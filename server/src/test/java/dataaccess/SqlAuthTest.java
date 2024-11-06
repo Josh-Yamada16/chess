@@ -21,10 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SqlAuthTest {
     static AuthDAO authDao;
-    static GameDAO gameDao;
     static UserDAO userDao;
 
-    private static JoinGameRequest createRequest;
     private static UserData existingUser;
     private static UserData newUser;
     private static Server server;
@@ -35,8 +33,6 @@ class SqlAuthTest {
         existingUser = new UserData("ExistingUser", "existingUserPassword", "eu@mail.com");
 
         newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
-
-        createRequest = new JoinGameRequest(JoinGameRequest.playerColor.WHITE,1);
 
         server = new Server();
         server.run(0);

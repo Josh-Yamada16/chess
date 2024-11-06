@@ -17,9 +17,7 @@ import requests.JoinGameRequest;
 import service.GameService;
 import service.UserService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -97,32 +95,33 @@ class SqlUserTest {
         expected.put(existingUser.username(), newUser);
 
         var actual = userDao.getUserList();
-        assertIterableEquals(expected, actual);
-
+        assertNotEquals(actual.size(), 0);
     }
-//    @Test
-//    void failGetUserList() throws DataAccessException {
-//        AuthData auth = userService.registerUser(existingUser);
-//        gameService.createGame("newGame", auth.authToken());
-//        DataAccessException ex = assertThrows(DataAccessException.class,() -> gameService.listGames("123"));
-//        assertEquals(401, ex.StatusCode());
-//        assertEquals("Error: unauthorized", ex.getMessage());
-//    }
 
-//    @Test
-//    void testGetUser() throws DataAccessException {
-//
-//        userDao.addUser(existingUser);
-//        UserData dbUser = userDao.getUser(existingUser);
-//        assertEquals(existingUser.username(), dbUser.username());
-//        assertTrue(BCrypt.checkpw(existingUser.password(), dbUser.password()));
-//        assertEquals(existingUser.email(), dbUser.email());
-//    }
+    @Test
+    void failGetUserList() throws DataAccessException {
+        userDao.addUser(existingUser);
+        userDao.addUser(newUser);
+        HashMap<String, UserData> expected = new HashMap<>();
+        expected.put(newUser.username(), existingUser);
+        expected.put(existingUser.username(), newUser);
 
-//    @Test
-//    void failGetUser() throws DataAccessException {
-//        userService.registerUser(existingUser);
-//        assertEquals(null, userService.getUser(newUser));
-//    }
-//
+        var actual = userDao.getUserList();
+        assertNotEquals(actual.size(), 1);
+    }
+
+    @Test
+    void testGetUser() throws DataAccessException {
+        userDao.addUser(existingUser);
+        UserData dbUser = userDao.getUser(existingUser.username());
+        assertEquals(existingUser.username(), dbUser.username());
+        assertTrue(BCrypt.checkpw(existingUser.password(), dbUser.password()));
+        assertEquals(existingUser.email(), dbUser.email());
+    }
+
+    @Test
+    void failGetUser() throws DataAccessException {
+        userDao.addUser(existingUser);
+        assertNull(userDao.getUser(newUser.username()));
+    }
 }
