@@ -1,5 +1,8 @@
 package dataaccess;
 
+import dataaccess.implementations.MySqlAuthDAO;
+import dataaccess.implementations.MySqlGameDAO;
+import dataaccess.implementations.MySqlUserDAO;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
@@ -20,12 +23,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SqlAuthTest {
-    static AuthDAO authDao;
-    static UserDAO userDao;
+    static AuthDAO authDao = new MySqlAuthDAO();
+    static UserDAO userDao = new MySqlUserDAO();
+    static GameDAO gameDao = new MySqlGameDAO();
 
     private static UserData existingUser;
     private static UserData newUser;
-    private static Server server;
 
     @BeforeAll
     public static void init() {
@@ -33,19 +36,13 @@ class SqlAuthTest {
         existingUser = new UserData("ExistingUser", "existingUserPassword", "eu@mail.com");
 
         newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
-
-        server = new Server();
-        server.run(0);
-        authDao = server.getAuthDAO();
-        userDao = server.getUserDAO();
-        authDao = server.getAuthDAO();
     }
 
     @BeforeEach
     void clear() throws DataAccessException {
         authDao.clear();
         userDao.clear();
-        authDao.clear();
+        gameDao.clear();
     }
 
     @Test

@@ -1,35 +1,31 @@
 package dataaccess;
 
+import dataaccess.implementations.MySqlAuthDAO;
+import dataaccess.implementations.MySqlGameDAO;
+import dataaccess.implementations.MySqlUserDAO;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
-import model.AuthData;
-import model.GameData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
-import server.Server;
 import requests.JoinGameRequest;
-import service.GameService;
-import service.UserService;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SqlUserTest {
-    static UserDAO userDao;
-    static GameDAO gameDao;
-    static AuthDAO authDao;
+    static UserDAO userDao = new MySqlUserDAO();
+    static GameDAO gameDao = new MySqlGameDAO();
+    static AuthDAO authDao = new MySqlAuthDAO();
 
     private static JoinGameRequest createRequest;
     private static UserData existingUser;
     private static UserData newUser;
-    private static Server server;
 
     @BeforeAll
     public static void init() {
@@ -40,11 +36,6 @@ class SqlUserTest {
 
         createRequest = new JoinGameRequest(JoinGameRequest.PlayerColor.WHITE,1);
 
-        server = new Server();
-        server.run(0);
-        authDao = server.getAuthDAO();
-        gameDao = server.getGameDAO();
-        userDao = server.getUserDAO();
     }
 
     @BeforeEach

@@ -148,19 +148,6 @@ public class MySqlAuthDAO implements AuthDAO {
             """
     };
 
-    // creating the table if is doesn't yet exist
-    public void configureAuthDatabase() throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
-
     // geenerates the reandom UUID for the authtoken
     @Override
     public String generateToken() {
