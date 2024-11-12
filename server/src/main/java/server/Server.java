@@ -7,7 +7,6 @@ import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
 import exception.DataAccessException;
 import model.*;
-//import server.websocket.WebSocketHandler;
 import requests.JoinGameRequest;
 import service.*;
 
@@ -21,12 +20,10 @@ public class Server {
     private UserDAO userDAO = new MySqlUserDAO();
     private GameDAO gameDAO = new MySqlGameDAO();
     private AuthDAO authDAO = new MySqlAuthDAO();
-//    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         userService = new UserService(userDAO, authDAO);
         gameService = new GameService(gameDAO, authDAO);
-//        webSocketHandler = new WebSocketHandler();
     }
 
     public Server(int memory){
@@ -42,7 +39,6 @@ public class Server {
 
         Spark.staticFiles.location("web");
         Spark.init();
-//        Spark.webSocket("/ws", webSocketHandler);
 
         Spark.post("/user", this::registerUser); // Registration
         Spark.post("/session", this::login); // Login
