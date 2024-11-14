@@ -1,27 +1,18 @@
-package client;
+import com.google.gson.Gson;
+import exception.DataAccessException;
+import server.ServerFacade;
 
 import java.util.Arrays;
 
-import com.google.gson.Gson;
-import model.Pet;
-import model.PetType;
-import exception.ResponseException;
-import client.websocket.NotificationHandler;
-import server.ServerFacade;
-import client.websocket.WebSocketFacade;
-
-public class PetClient {
+public class PostLoginClient {
     private String visitorName = null;
     private final ServerFacade server;
     private final String serverUrl;
-    private final NotificationHandler notificationHandler;
-    private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
 
-    public PetClient(String serverUrl, NotificationHandler notificationHandler) {
+    public PostLoginClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
-        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input) {
@@ -39,7 +30,7 @@ public class PetClient {
                 case "quit" -> "quit";
                 default -> help();
             };
-        } catch (ResponseException ex) {
+        } catch (DataAccessException ex) {
             return ex.getMessage();
         }
     }

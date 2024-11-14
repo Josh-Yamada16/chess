@@ -66,6 +66,19 @@ public class Server {
         res.status(ex.statusCode());
     }
 
+
+    // added exception handling for the register endpoint
+    private Object registerUser(Request req, Response res) {
+        try {
+            var user = new Gson().fromJson(req.body(), UserData.class);
+            AuthData auth = userService.registerUser(user);
+            return new Gson().toJson(auth);
+        } catch (DataAccessException ex){
+            res.status(ex.statusCode());
+            return new Gson().toJson(Map.of("message", ex.getMessage()));
+        }
+    }
+
     // Added exception handling for the login endpoint
     private Object login(Request req, Response res) {
         try{
@@ -83,18 +96,6 @@ public class Server {
             String authToken = req.headers("Authorization");
             userService.logout(authToken);
             return new Gson().toJson(null);
-        } catch (DataAccessException ex){
-            res.status(ex.statusCode());
-            return new Gson().toJson(Map.of("message", ex.getMessage()));
-        }
-    }
-
-    // added exception handling for the register endpoint
-    private Object registerUser(Request req, Response res) {
-        try {
-            var user = new Gson().fromJson(req.body(), UserData.class);
-            AuthData auth = userService.registerUser(user);
-            return new Gson().toJson(auth);
         } catch (DataAccessException ex){
             res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
@@ -142,25 +143,5 @@ public class Server {
         gameService.clear();
         res.status(200);
         return new Gson().toJson(null);
-    }
-
-    public UserService getUserService() {
-        return userService;
-    }
-
-    public GameService getGameService() {
-        return gameService;
-    }
-
-    public GameDAO getGameDAO() {
-        return gameDAO;
-    }
-
-    public AuthDAO getAuthDAO() {
-        return authDAO;
-    }
-
-    public UserDAO getUserDAO() {
-        return userDAO;
     }
 }

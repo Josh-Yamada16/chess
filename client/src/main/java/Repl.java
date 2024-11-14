@@ -1,14 +1,17 @@
 import com.sun.nio.sctp.NotificationHandler;
 
 import java.util.Scanner;
-
 import static ui.EscapeSequences.*;
 
 public class Repl {
-    private final PetClient client;
+    private final PreLoginClient preLoginClient;
+    private final PostLoginClient postLoginClient;
+    private final InGameClient inGameClient;
 
     public Repl(String serverUrl) {
-        client = new PetClient(serverUrl, this);
+        preLoginClient = new PreLoginClient(serverUrl, this);
+        postLoginClient = new PostLoginClient(serverUrl);
+        inGameClient = new InGameClient(serverUrl);
     }
 
     public void run() {
