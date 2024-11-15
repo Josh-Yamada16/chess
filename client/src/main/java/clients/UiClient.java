@@ -1,12 +1,17 @@
 package clients;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.DataAccessException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
+import requests.JoinGameRequest;
 import server.ServerFacade;
 
 import java.util.Arrays;
+
+import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
 
 public class UiClient {
     private String username = null;
@@ -54,7 +59,7 @@ public class UiClient {
                     - 'logout'
                     - 'create' game <gameName>
                     - 'list' games
-                    - 'play' game <gameId>
+                    - 'play' game <game#> <playerColor>
                     - 'observe' game <gameId>
                     """;
         }
@@ -120,63 +125,59 @@ public class UiClient {
 
     }
 
-    public String rescuePet(String... params) throws DataAccessException {
-        assertLoggedIn();
-        if (params.length >= 2) {
-            var name = params[0];
-            var type = PetType.valueOf(params[1].toUpperCase());
-            var pet = new Pet(0, name, type);
-            pet = server.addPet(pet);
-            return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
+    public String listGames(String... params) throws DataAccessException {
+        if (params.length == 0) {
+            assertLoggedIn();
+            var games = server.listGames(this.authToken);
+            var result = new StringBuilder();
+            int counter = 1;
+            for (var game : games) {
+                result.append(counter).append(". ");
+                result.append(game.gameID()).append(" ");
+                result.append(game.gameName());
+                result.append('\n');
+            }
+            return result.toString();
         }
-        throw new DataAccessException(400, "Expected: <name> <CAT|DOG|FROG>");
+        throw new DataAccessException(400, "Expected: *JUST LIST*");
     }
 
-    public String listGames() throws DataAccessException {
-        assertSignedIn();
-        var pets = server.listPets();
-        var result = new StringBuilder();
-        var gson = new Gson();
-        for (var pet : pets) {
-            result.append(gson.toJson(pet)).append('\n');
-        }
-        return result.toString();
-    }
-
-    public String adoptPet(String... params) throws DataAccessException {
-        assertSignedIn();
-        if (params.length == 1) {
-            try {
-                var id = Integer.parseInt(params[0]);
-                var pet = getPet(id);
-                if (pet != null) {
-                    server.deletePet(id);
-                    return String.format("%s says %s", pet.name(), pet.sound());
+    public String playGame(String... params) throws DataAccessException {
+        var games = server.listGames(this.authToken);
+        if (params.length == 2) {
+            JoinGameRequest.PlayerColor color = null;
+            if (params[1].equalsIgnoreCase("white")){
+                color = JoinGameRequest.PlayerColor.WHITE;
+            }
+            else if (params[1].equalsIgnoreCase("black")){
+                color = JoinGameRequest.PlayerColor.BLACK;
+            }
+            else{
+                throw new DataAccessException(400, "Expected: white OR black");
+            }
+            int num = Integer.parseInt(params[0]);
+            if (num > 0 & num <= games.size()){
+                JoinGameRequest req = new JoinGameRequest(color, games.get(num).gameID());
+                if (server.joinGame(req)){
+                    state = State.INGAME;
+                    System.out.print(SET_TEXT_COLOR_BLUE + String.format("Game %d Successfully joined!", num));
+                    printBoardWhite(games.get(num).game());
+                    printBoardBlack(games.get(num).game());
                 }
-            } catch (NumberFormatException ignored) {
+            }
+            else{
+                throw new DataAccessException(400, "Game not available");
             }
         }
-        throw new DataAccessException(400, "Expected: <pet id>");
+        throw new DataAccessException(400, "Expected: <game#> <playerColor>");
     }
 
-    public String adoptAllPets() throws DataAccessException {
-        assertSignedIn();
-        var buffer = new StringBuilder();
-        for (var pet : server.listPets()) {
-            buffer.append(String.format("%s says %s%n", pet.name(), pet.sound()));
-        }
-
-        server.deleteAllPets();
-        return buffer.toString();
+    private void printBoardWhite(ChessGame game) {
+        return;
     }
 
-    private Pet getPet(int id) throws DataAccessException {
-        for (var pet : server.listPets()) {
-            if (pet.id() == id) {
-                return pet;
-            }
-        }
-        return null;
+    private void printBoardBlack(ChessGame game) {
+        return;
     }
 
     private void assertLoggedIn() throws DataAccessException {

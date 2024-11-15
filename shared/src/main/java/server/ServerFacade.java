@@ -38,11 +38,11 @@ public class ServerFacade {
         }
     }
 
-    public ArrayList<GameData> listGames() throws DataAccessException {
+    public ArrayList<GameData> listGames(String authToken) throws DataAccessException {
         var path = "/game";
         record listGamesResponse(ArrayList<GameData> gameList) {
         }
-        var response = this.makeRequest("GET", path, null, listGamesResponse.class, null);
+        var response = this.makeRequest("GET", path, null, listGamesResponse.class, authToken);
         return response.gameList();
     }
 
