@@ -46,11 +46,11 @@ public class ServerFacade {
         return response.gameList();
     }
 
-    public boolean createGame(String gameName) throws DataAccessException {
+    public boolean createGame(String gameName, String authToken) throws DataAccessException {
         try{
             var path = "/game";
             GameData game = new GameData(0, null, null, gameName, null);
-            this.makeRequest("POST", path, game, null, null);
+            this.makeRequest("POST", path, game, null, authToken);
             return true;
         } catch (Exception e){
             return false;

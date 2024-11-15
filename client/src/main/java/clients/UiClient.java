@@ -28,7 +28,7 @@ public class UiClient {
             return switch (cmd) {
                 case "login" -> login(params);
                 case "register" -> register(params);
-                case "logout" -> logout();
+                case "logout" -> logout(params);
                 case "create" -> createGame(params);
                 case "list" -> listGames(params);
                 case "play" -> playGame(params);
@@ -52,11 +52,10 @@ public class UiClient {
         else if (state == State.POSTSIGNIN) {
             return """
                     - 'logout'
-                    - 'create' game
+                    - 'create' game <gameName>
                     - 'list' games
-                    - play'' game
-                    - 'observe' game
-                    - 'quit'
+                    - 'play' game <gameId>
+                    - 'observe' game <gameId>
                     """;
         }
         else {
@@ -93,11 +92,32 @@ public class UiClient {
         throw new DataAccessException(400, "Expected: <username> <password> <email>");
     }
 
-    public String logout() throws DataAccessException {
-        assertLoggedIn();
-        server.logout(this.authToken);
-        state = State.PRESIGNIN;
-        return String.format("See you next time %s!", username);
+    public String logout(String... params) throws DataAccessException {
+        if (params.length == 0) {
+            assertLoggedIn();
+            if (server.logout(this.authToken)){
+                state = State.PRESIGNIN;
+                return String.format("See you next time %s!", username);
+            }
+            else{
+                return "Unauthorized";
+            }
+        }
+        throw new DataAccessException(400, "Expected: *JUST LOGOUT*");
+    }
+
+    public String createGame(String... params) throws DataAccessException {
+        if (params.length == 1) {
+            assertLoggedIn();
+            if (server.createGame(params[0], this.authToken)){
+                return "Your game has been created!";
+            }
+            else{
+                return "Unauthorized";
+            }
+        }
+        throw new DataAccessException(400, "Expected: <gameName>");
+
     }
 
     public String rescuePet(String... params) throws DataAccessException {
