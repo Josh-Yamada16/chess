@@ -1,6 +1,7 @@
 package repls;
 
 import clients.State;
+import clients.UiClient;
 import exception.DataAccessException;
 
 import java.util.Scanner;
@@ -16,7 +17,7 @@ public class UiRepl {
 
     public void run() {
         System.out.println("\uD83D\uDC36 Welcome to Chess. Sign in to start.");
-        System.out.print(preLoginClient.help());
+        System.out.print(uiClient.help());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
@@ -25,7 +26,7 @@ public class UiRepl {
             String line = scanner.nextLine();
 
             try {
-                result = preLoginClient.eval(line);
+                result = uiClient.eval(line);
                 System.out.print(SET_TEXT_COLOR_BLUE + result);
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -39,9 +40,4 @@ public class UiRepl {
         System.out.print("\n" + "[LOGGED OUT]" + ">>> ");
     }
 
-    private void assertSignedIn() throws DataAccessException {
-        if (state == State.PRESIGNIN) {
-            throw new DataAccessException(400, "You must sign in");
-        }
-    }
 }

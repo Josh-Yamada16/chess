@@ -19,21 +19,21 @@ public class ServerFacade {
 
     public AuthData registerUser(UserData user) throws DataAccessException {
         var path = "/user";
-        return this.makeRequest("POST", path, user, AuthData.class);
+        return this.makeRequest("POST", path, user, AuthData.class, null);
     }
 
     public AuthData login(String username, String password) throws DataAccessException {
         var path = "/session";
         UserData user = new UserData(username, password, null);
-        return this.makeRequest("POST", path, user, AuthData.class);
+        return this.makeRequest("POST", path, user, AuthData.class, null);
     }
 
-    public boolean logout() throws DataAccessException {
+    public boolean logout(String authToken) {
+        var path = "/session";
         try{
-            var path = "/session";
-            this.makeRequest("DELETE", path, null, null);
+            this.makeRequest("DELETE", path, null, null, authToken);
             return true;
-        } catch (Exception e){
+        } catch (DataAccessException e) {
             return false;
         }
     }
@@ -42,7 +42,7 @@ public class ServerFacade {
         var path = "/game";
         record listGamesResponse(ArrayList<GameData> gameList) {
         }
-        var response = this.makeRequest("GET", path, null, listGamesResponse.class);
+        var response = this.makeRequest("GET", path, null, listGamesResponse.class, null);
         return response.gameList();
     }
 
@@ -50,7 +50,7 @@ public class ServerFacade {
         try{
             var path = "/game";
             GameData game = new GameData(0, null, null, gameName, null);
-            this.makeRequest("POST", path, game, null);
+            this.makeRequest("POST", path, game, null, null);
             return true;
         } catch (Exception e){
             return false;
@@ -60,7 +60,7 @@ public class ServerFacade {
     public boolean joinGame(JoinGameRequest request) throws DataAccessException {
         try{
             var path = "/game";
-            this.makeRequest("PUT", path, request, null);
+            this.makeRequest("PUT", path, request, null, null);
             return true;
         } catch (Exception e){
             return false;
@@ -69,16 +69,16 @@ public class ServerFacade {
 
     public void clear() throws DataAccessException {
         var path = "/db";
-        this.makeRequest("DELETE", path, null, null);
+        this.makeRequest("DELETE", path, null, null, null);
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws DataAccessException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws DataAccessException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
-            http.addRequestProperty("Authorization", );
+            http.addRequestProperty("Authorization", authToken);
 
             writeBody(request, http);
             http.connect();

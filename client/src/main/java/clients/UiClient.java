@@ -2,6 +2,8 @@ package clients;
 
 import com.google.gson.Gson;
 import exception.DataAccessException;
+import model.AuthData;
+import model.UserData;
 import server.ServerFacade;
 
 import java.util.Arrays;
@@ -24,12 +26,13 @@ public class UiClient {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "signin" -> signIn(params);
-                case "rescue" -> rescuePet(params);
-                case "list" -> listPets();
-                case "signout" -> signOut();
-                case "adopt" -> adoptPet(params);
-                case "adoptall" -> adoptAllPets();
+                case "login" -> login(params);
+                case "register" -> register(params);
+                case "logout" -> logout();
+                case "create" -> createGame(params);
+                case "list" -> listGames(params);
+                case "play" -> playGame(params);
+                case "observe" -> observeGame(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -39,41 +42,66 @@ public class UiClient {
     }
 
     public String help() {
-        if (state == State.SIGNEDOUT) {
+        if (state == State.PRESIGNIN) {
             return """
-                    - signIn <yourname>
-                    - quit
+                    - 'login' <username> <password>
+                    - 'register' <username> <password> <email>
+                    - quit''
                     """;
         }
-        return """
-                - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
-                - quit
-                """;
-    }
-
-    public String signOut() throws DataAccessException {
-        assertSignedIn();
-        ws.leavePetShop(visitorName);
-        ws = null;
-        state = State.SIGNEDOUT;
-        return String.format("%s left the shop", visitorName);
-    }
-
-    public String signIn(String... params) throws DataAccessException {
-        if (params.length >= 1) {
-            state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
-            return String.format("You signed in as %s.", visitorName);
+        else if (state == State.POSTSIGNIN) {
+            return """
+                    - 'logout'
+                    - 'create' game
+                    - 'list' games
+                    - play'' game
+                    - 'observe' game
+                    - 'quit'
+                    """;
         }
-        throw new DataAccessException(400, "Expected: <yourname>");
+        else {
+            return """
+                    """;
+        }
+    }
+
+    public String login(String... params) throws DataAccessException {
+        if (params.length == 2) {
+            AuthData result = server.login(params[0], params[1]);
+            if (result != null) {
+                this.username = result.username();
+                this.authToken = result.authToken();
+                state = State.POSTSIGNIN;
+                return String.format("You signed in as %s.", this.username);
+            }
+            throw new DataAccessException(400, "Invalid Login");
+        }
+        throw new DataAccessException(400, "Expected: <username> <password>");
+    }
+
+    public String register(String... params) throws DataAccessException {
+        if (params.length == 3) {
+            UserData user = new UserData(params[0], params[1], params[2]);
+            AuthData result = server.registerUser(user);
+            if (result != null) {
+                this.username = result.username();
+                this.authToken = result.authToken();
+                state = State.POSTSIGNIN;
+                return String.format("You signed in as %s.", this.username);
+            }
+        }
+        throw new DataAccessException(400, "Expected: <username> <password> <email>");
+    }
+
+    public String logout() throws DataAccessException {
+        assertLoggedIn();
+        server.logout(this.authToken);
+        state = State.PRESIGNIN;
+        return String.format("See you next time %s!", username);
     }
 
     public String rescuePet(String... params) throws DataAccessException {
-        assertSignedIn();
+        assertLoggedIn();
         if (params.length >= 2) {
             var name = params[0];
             var type = PetType.valueOf(params[1].toUpperCase());
@@ -84,7 +112,7 @@ public class UiClient {
         throw new DataAccessException(400, "Expected: <name> <CAT|DOG|FROG>");
     }
 
-    public String listPets() throws DataAccessException {
+    public String listGames() throws DataAccessException {
         assertSignedIn();
         var pets = server.listPets();
         var result = new StringBuilder();
@@ -131,8 +159,8 @@ public class UiClient {
         return null;
     }
 
-    private void assertSignedIn() throws DataAccessException {
-        if (state == State.SIGNEDOUT) {
+    private void assertLoggedIn() throws DataAccessException {
+        if (this.state == State.PRESIGNIN) {
             throw new DataAccessException(400, "You must sign in");
         }
     }
