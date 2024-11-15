@@ -1,22 +1,22 @@
-import com.sun.nio.sctp.NotificationHandler;
+package repls;
+
+import clients.PostLoginClient;
 
 import java.util.Scanner;
-import static ui.EscapeSequences.*;
 
-public class Repl {
-    private final PreLoginClient preLoginClient;
+import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
+import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
+
+public class PostLoginRepl {
     private final PostLoginClient postLoginClient;
-    private final InGameClient inGameClient;
 
-    public Repl(String serverUrl) {
-        preLoginClient = new PreLoginClient(serverUrl, this);
+    public PostLoginRepl(String serverUrl) {
         postLoginClient = new PostLoginClient(serverUrl);
-        inGameClient = new InGameClient(serverUrl);
     }
 
     public void run() {
-        System.out.println("\uD83D\uDC36 Welcome to the pet store. Sign in to start.");
-        System.out.print(client.help());
+        System.out.println("\uD83D\uDC36 Welcome to Chess. Sign in to start.");
+        System.out.print(postLoginClient.help());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
@@ -25,7 +25,7 @@ public class Repl {
             String line = scanner.nextLine();
 
             try {
-                result = client.eval(line);
+                result = postLoginClient.eval(line);
                 System.out.print(SET_TEXT_COLOR_BLUE + result);
             } catch (Throwable e) {
                 var msg = e.toString();

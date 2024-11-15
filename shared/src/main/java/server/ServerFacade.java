@@ -3,9 +3,11 @@ package server;
 import com.google.gson.Gson;
 import exception.DataAccessException;
 import model.*;
+import requests.JoinGameRequest;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
 public class ServerFacade {
 
@@ -15,27 +17,59 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public Object registerUser(Pet pet) throws DataAccessException {
-        var path = "/pet";
-        return this.makeRequest("POST", path, pet, Pet.class);
+    public AuthData registerUser(UserData user) throws DataAccessException {
+        var path = "/user";
+        return this.makeRequest("POST", path, user, AuthData.class);
     }
 
-    public void deletePet(int id) throws DataAccessException {
-        var path = String.format("/pet/%s", id);
-        this.makeRequest("DELETE", path, null, null);
+    public AuthData login(String username, String password) throws DataAccessException {
+        var path = "/session";
+        UserData user = new UserData(username, password, null);
+        return this.makeRequest("POST", path, user, AuthData.class);
     }
 
-    public void deleteAllPets() throws DataAccessException {
-        var path = "/pet";
-        this.makeRequest("DELETE", path, null, null);
-    }
-
-    public Pet[] listPets() throws DataAccessException {
-        var path = "/pet";
-        record listPetResponse(Pet[] pet) {
+    public boolean logout() throws DataAccessException {
+        try{
+            var path = "/session";
+            this.makeRequest("DELETE", path, null, null);
+            return true;
+        } catch (Exception e){
+            return false;
         }
-        var response = this.makeRequest("GET", path, null, listPetResponse.class);
-        return response.pet();
+    }
+
+    public ArrayList<GameData> listGames() throws DataAccessException {
+        var path = "/game";
+        record listGamesResponse(ArrayList<GameData> gameList) {
+        }
+        var response = this.makeRequest("GET", path, null, listGamesResponse.class);
+        return response.gameList();
+    }
+
+    public boolean createGame(String gameName) throws DataAccessException {
+        try{
+            var path = "/game";
+            GameData game = new GameData(0, null, null, gameName, null);
+            this.makeRequest("POST", path, game, null);
+            return true;
+        } catch (Exception e){
+            return false;
+        }
+    }
+
+    public boolean joinGame(JoinGameRequest request) throws DataAccessException {
+        try{
+            var path = "/game";
+            this.makeRequest("PUT", path, request, null);
+            return true;
+        } catch (Exception e){
+            return false;
+        }
+    }
+
+    public void clear() throws DataAccessException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null);
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws DataAccessException {
@@ -53,7 +87,6 @@ public class ServerFacade {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
-
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {

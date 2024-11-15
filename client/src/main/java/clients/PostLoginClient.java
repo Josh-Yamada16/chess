@@ -1,3 +1,5 @@
+package clients;
+
 import com.google.gson.Gson;
 import exception.DataAccessException;
 import server.ServerFacade;
@@ -35,7 +37,7 @@ public class PostLoginClient {
         }
     }
 
-    public String signIn(String... params) throws ResponseException {
+    public String signIn(String... params) throws DataAccessException {
         if (params.length >= 1) {
             state = State.SIGNEDIN;
             visitorName = String.join("-", params);
@@ -43,10 +45,10 @@ public class PostLoginClient {
             ws.enterPetShop(visitorName);
             return String.format("You signed in as %s.", visitorName);
         }
-        throw new ResponseException(400, "Expected: <yourname>");
+        throw new DataAccessException(400, "Expected: <yourname>");
     }
 
-    public String rescuePet(String... params) throws ResponseException {
+    public String rescuePet(String... params) throws DataAccessException {
         assertSignedIn();
         if (params.length >= 2) {
             var name = params[0];
@@ -55,10 +57,10 @@ public class PostLoginClient {
             pet = server.addPet(pet);
             return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
         }
-        throw new ResponseException(400, "Expected: <name> <CAT|DOG|FROG>");
+        throw new DataAccessException(400, "Expected: <name> <CAT|DOG|FROG>");
     }
 
-    public String listPets() throws ResponseException {
+    public String listPets() throws DataAccessException {
         assertSignedIn();
         var pets = server.listPets();
         var result = new StringBuilder();
@@ -69,7 +71,7 @@ public class PostLoginClient {
         return result.toString();
     }
 
-    public String adoptPet(String... params) throws ResponseException {
+    public String adoptPet(String... params) throws DataAccessException {
         assertSignedIn();
         if (params.length == 1) {
             try {
@@ -82,10 +84,10 @@ public class PostLoginClient {
             } catch (NumberFormatException ignored) {
             }
         }
-        throw new ResponseException(400, "Expected: <pet id>");
+        throw new DataAccessException(400, "Expected: <pet id>");
     }
 
-    public String adoptAllPets() throws ResponseException {
+    public String adoptAllPets() throws DataAccessException {
         assertSignedIn();
         var buffer = new StringBuilder();
         for (var pet : server.listPets()) {
@@ -96,7 +98,7 @@ public class PostLoginClient {
         return buffer.toString();
     }
 
-    public String signOut() throws ResponseException {
+    public String signOut() throws DataAccessException {
         assertSignedIn();
         ws.leavePetShop(visitorName);
         ws = null;
@@ -104,7 +106,7 @@ public class PostLoginClient {
         return String.format("%s left the shop", visitorName);
     }
 
-    private Pet getPet(int id) throws ResponseException {
+    private Pet getPet(int id) throws DataAccessException {
         for (var pet : server.listPets()) {
             if (pet.id() == id) {
                 return pet;
@@ -130,9 +132,9 @@ public class PostLoginClient {
                 """;
     }
 
-    private void assertSignedIn() throws ResponseException {
+    private void assertSignedIn() throws DataAccessException {
         if (state == State.SIGNEDOUT) {
-            throw new ResponseException(400, "You must sign in");
+            throw new DataAccessException(400, "You must sign in");
         }
     }
 }
