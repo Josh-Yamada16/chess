@@ -6,13 +6,14 @@ import server.ServerFacade;
 
 import java.util.Arrays;
 
-public class PostLoginClient {
-    private String visitorName = null;
+public class UiClient {
+    private String username = null;
+    private String authToken = null;
     private final ServerFacade server;
     private final String serverUrl;
-    private State state = State.SIGNEDOUT;
+    private State state = State.PRESIGNIN;
 
-    public PostLoginClient(String serverUrl) {
+    public UiClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
     }
@@ -37,12 +38,35 @@ public class PostLoginClient {
         }
     }
 
+    public String help() {
+        if (state == State.SIGNEDOUT) {
+            return """
+                    - signIn <yourname>
+                    - quit
+                    """;
+        }
+        return """
+                - list
+                - adopt <pet id>
+                - rescue <name> <CAT|DOG|FROG|FISH>
+                - adoptAll
+                - signOut
+                - quit
+                """;
+    }
+
+    public String signOut() throws DataAccessException {
+        assertSignedIn();
+        ws.leavePetShop(visitorName);
+        ws = null;
+        state = State.SIGNEDOUT;
+        return String.format("%s left the shop", visitorName);
+    }
+
     public String signIn(String... params) throws DataAccessException {
         if (params.length >= 1) {
             state = State.SIGNEDIN;
             visitorName = String.join("-", params);
-            ws = new WebSocketFacade(serverUrl, notificationHandler);
-            ws.enterPetShop(visitorName);
             return String.format("You signed in as %s.", visitorName);
         }
         throw new DataAccessException(400, "Expected: <yourname>");
@@ -98,14 +122,6 @@ public class PostLoginClient {
         return buffer.toString();
     }
 
-    public String signOut() throws DataAccessException {
-        assertSignedIn();
-        ws.leavePetShop(visitorName);
-        ws = null;
-        state = State.SIGNEDOUT;
-        return String.format("%s left the shop", visitorName);
-    }
-
     private Pet getPet(int id) throws DataAccessException {
         for (var pet : server.listPets()) {
             if (pet.id() == id) {
@@ -113,23 +129,6 @@ public class PostLoginClient {
             }
         }
         return null;
-    }
-
-    public String help() {
-        if (state == State.SIGNEDOUT) {
-            return """
-                    - signIn <yourname>
-                    - quit
-                    """;
-        }
-        return """
-                - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
-                - quit
-                """;
     }
 
     private void assertSignedIn() throws DataAccessException {

@@ -78,6 +78,7 @@ public class ServerFacade {
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
+            http.addRequestProperty("Authorization", );
 
             writeBody(request, http);
             http.connect();
@@ -87,6 +88,8 @@ public class ServerFacade {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
+
+
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {

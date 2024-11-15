@@ -1,17 +1,17 @@
 package repls;
 
-import clients.PreLoginClient;
+import clients.State;
+import exception.DataAccessException;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
-import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
-public class PreLoginRepl {
-    private final PreLoginClient preLoginClient;
+public class UiRepl {
+    private final UiClient uiClient;
 
-    public PreLoginRepl(String serverUrl) {
-        preLoginClient = new PreLoginClient(serverUrl);
+    public UiRepl(String serverUrl) {
+        uiClient = new UiClient(serverUrl);
     }
 
     public void run() {
@@ -35,13 +35,13 @@ public class PreLoginRepl {
         System.out.println();
     }
 
-    public void notify(Notification notification) {
-        System.out.println(SET_TEXT_COLOR_RED + notification.message());
-        printPrompt();
-    }
-
     private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + GREEN);
+        System.out.print("\n" + "[LOGGED OUT]" + ">>> ");
     }
 
+    private void assertSignedIn() throws DataAccessException {
+        if (state == State.PRESIGNIN) {
+            throw new DataAccessException(400, "You must sign in");
+        }
+    }
 }
