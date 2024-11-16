@@ -40,9 +40,9 @@ public class ServerFacade {
 
     public ArrayList<GameData> listGames(String authToken) throws DataAccessException {
         var path = "/game";
-        record listGamesResponse(ArrayList<GameData> gameList) {
+        record ListGamesResponse(ArrayList<GameData> gameList) {
         }
-        var response = this.makeRequest("GET", path, null, listGamesResponse.class, authToken);
+        var response = this.makeRequest("GET", path, null, ListGamesResponse.class, authToken);
         return response.gameList();
     }
 

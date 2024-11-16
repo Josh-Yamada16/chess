@@ -6,11 +6,8 @@ import exception.DataAccessException;
 import model.UserData;
 
 import org.mindrot.jbcrypt.BCrypt;
-import java.sql.SQLException;
-import java.util.HashMap;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
+import java.util.HashMap;
 
 
 public class MySqlUserDAO implements UserDAO {
@@ -104,28 +101,8 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     // The common method amongst the DAOs that implements the statement for the sql to implement
-    private Object executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String) {
-                        ps.setString(i + 1, (String) param);
-                    }
-                    else if (param == null) {
-                        ps.setNull(i + 1, NULL);
-                    }
-                }
-                ps.executeUpdate();
-                var rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-                return 0;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(500, String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
+    private void executeUpdate(String statement, Object... params) throws DataAccessException {
+        ExecuteUpdate.execute(statement, params);
     }
 
     // The create statement just in case that the table isn't already there in the database
