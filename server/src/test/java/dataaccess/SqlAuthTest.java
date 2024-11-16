@@ -97,20 +97,20 @@ class SqlAuthTest {
 
     @Test
     void testGetAuth() throws DataAccessException {
-        AuthData adat = authDao.createAuth(existingUser);
-        UserData udat = authDao.getAuth(adat.authToken());
-        assertEquals(existingUser.username(), udat.username());
-        assertTrue(BCrypt.checkpw(existingUser.password(), udat.password()));
-        assertEquals(existingUser.email(), udat.email());
+        AuthData adata = authDao.createAuth(new UserData("ExistingUser", "existingUserPassword", "eu@mail.com"));
+        UserData udata = authDao.getAuth(adata.authToken());
+        assertEquals(existingUser.username(), udata.username());
+        assertTrue(BCrypt.checkpw(existingUser.password(), udata.password()));
+        assertEquals(existingUser.email(), udata.email());
     }
 
     @Test
     void failGetAuth() throws DataAccessException {
         AuthData adat = authDao.createAuth(existingUser);
         UserData udat = authDao.getAuth(adat.authToken());
-        assertNotEquals(newUser.username(), udat.username());
-        assertFalse(BCrypt.checkpw(newUser.password(), udat.password()));
-        assertNotEquals(newUser.email(), udat.email());
+        assertNotEquals(new UserData("NewUser", "newUserPassword", "nu@mail.com").username(), udat.username());
+        assertFalse(BCrypt.checkpw(new UserData("NewUser", "newUserPassword", "nu@mail.com").password(), udat.password()));
+        assertNotEquals(new UserData("NewUser", "newUserPassword", "nu@mail.com").email(), udat.email());
     }
 
     @Test
