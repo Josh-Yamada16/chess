@@ -1,9 +1,3 @@
-package repls;
-
-import clients.State;
-import clients.UiClient;
-import exception.DataAccessException;
-
 import java.util.Scanner;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
@@ -21,8 +15,15 @@ public class UiRepl {
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
+        FuncInter func = null;
         while (!result.equals("quit")) {
-            printPrompt();
+            if (uiClient.state == State.PRESIGNIN){
+                func = this::printLoggedoutPrompt;
+            }
+            else{
+                func = this::printLoggedinPrompt;
+            }
+            func.execute();
             String line = scanner.nextLine();
 
             try {
@@ -35,9 +36,17 @@ public class UiRepl {
         }
         System.out.println();
     }
-
-    private void printPrompt() {
-        System.out.print("\n" + "[LOGGED OUT]" + ">>> ");
+    interface FuncInter{
+        void execute();
     }
+
+    private void printLoggedoutPrompt() {
+        System.out.print("\n" + "[LOGGED_OUT]" + ">>> ");
+    }
+
+    private void printLoggedinPrompt() {
+        System.out.print("\n" + "[LOGGED_IN]" + ">>> ");
+    }
+
 
 }

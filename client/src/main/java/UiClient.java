@@ -1,5 +1,3 @@
-package clients;
-
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPosition;
@@ -19,12 +17,10 @@ public class UiClient {
     private String username = null;
     private String authToken = null;
     private final ServerFacade server;
-    private final String serverUrl;
-    private State state = State.PRESIGNIN;
+    public State state = State.PRESIGNIN;
 
     public UiClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
-        this.serverUrl = serverUrl;
     }
 
     public String eval(String input) {
@@ -175,12 +171,19 @@ public class UiClient {
     }
 
     public String observeGame(String... params) throws DataAccessException{
+        var games = server.listGames(this.authToken);
+        int num = Integer.parseInt(params[0]);
+        if (num > 0 & num <= games.size()){
+            printWhitePov(games.get(num).game().getBoard());
+            printBlackPov(games.get(num).game().getBoard());
+        }
+        else{
+            throw new DataAccessException(400, "Game not available");
+        }
         return "";
     }
 
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-
-    // Padded characters.
     private static final String EMPTY = " ";
 
     private void printWhitePov(ChessBoard board) {
