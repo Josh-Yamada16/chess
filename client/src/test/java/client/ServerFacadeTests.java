@@ -26,17 +26,17 @@ public class ServerFacadeTests {
         server.stop();
     }
 
-//    @Test
-//    @DisplayName("Normal User Registration")
-//    public void successRegister() {
-//        //submit register request
-//        TestAuthResult registerResult = serverFacade.register(newUser);
-//
-//        assertHttpOk(registerResult);
-//        Assertions.assertEquals(newUser.getUsername(), registerResult.getUsername(),
-//                "Response did not have the same username as was registered");
-//        Assertions.assertNotNull(registerResult.getAuthToken(), "Response did not contain an authentication string");
-//    }
+    @Test
+    @DisplayName("Normal User Registration")
+    public void successRegister() {
+        //submit register request
+        TestAuthResult registerResult = serverFacade.register(newUser);
+
+        assertHttpOk(registerResult);
+        Assertions.assertEquals(newUser.getUsername(), registerResult.getUsername(),
+                "Response did not have the same username as was registered");
+        Assertions.assertNotNull(registerResult.getAuthToken(), "Response did not contain an authentication string");
+    }
 //
 //    @Test
 //    @DisplayName("Re-Register User")
