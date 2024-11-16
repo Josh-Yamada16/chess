@@ -1,6 +1,8 @@
 package clients;
 
+import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPosition;
 import exception.DataAccessException;
 import model.AuthData;
 import model.UserData;
@@ -161,8 +163,8 @@ public class UiClient {
                 if (server.joinGame(req)){
                     state = State.INGAME;
                     System.out.print(SET_TEXT_COLOR_BLUE + String.format("Game %d Successfully joined!", num));
-                    printBoardWhite(games.get(num).game());
-                    printBoardBlack(games.get(num).game());
+                    printWhitePov(games.get(num).game().getBoard());
+                    printBlackPov(games.get(num).game().getBoard());
                 }
             }
             else{
@@ -177,60 +179,99 @@ public class UiClient {
     }
 
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
-    private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
 
     // Padded characters.
     private static final String EMPTY = " ";
 
-    private void printWhitePov() {
+    private void printWhitePov(ChessBoard board) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
-        drawHeaders(out);
-        drawChessBoard(out);
-        drawHeaders(out);
+        String[] headers = { "a", "b", "c", "d", "e", "f", "g", "h" };
+        drawHeaders(out, headers);
+        drawChessBoard(out, board, true, 0);
+        drawHeaders(out, headers);
     }
 
-    private static void drawHeaders(PrintStream out) {
+    private void printBlackPov(ChessBoard board) {
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print(ERASE_SCREEN);
+        String[] headers = { "h", "g", "f", "e", "d", "c", "b", "a" };
+        drawHeaders(out, headers);
+        drawChessBoard(out, board, false, 7);
+        drawHeaders(out, headers);
+    }
+
+    private static void drawHeaders(PrintStream out, String[] headers) {
         setLightGrey(out);
-        out.print(EMPTY);
-        String[] headers = { "a", "b", "c", "d", "e", "f", "g", "h" };
+        out.print(EMPTY.repeat(3));
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-            drawHeader(out, headers[boardCol]);
+            out.print(EMPTY);
+            printHeaderText(out, headers[boardCol]);
+            setLightGrey(out);
+            out.print(EMPTY);
         }
-        setLightGrey(out);
-        out.print(EMPTY);
         setBlack(out);
         out.println();
     }
 
-    private static void drawHeader(PrintStream out, String headerText) {
-        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-        out.print(EMPTY.repeat(prefixLength));
-        printHeaderText(out, headerText);
-        out.print(EMPTY.repeat(suffixLength));
-    }
-
     private static void printHeaderText(PrintStream out, String text) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_BLACK);
         out.print(text);
-        setLightGrey(out);
     }
 
-    private static void drawChessBoard(PrintStream out) {
-        for (int squareRow = 0; squareRow < BOARD_SIZE_IN_SQUARES; ++squareRow) {
+    private static void drawChessBoard(PrintStream out, ChessBoard board, boolean increment, int start) {
+        interface FuncInter{
+            void execute();
+        }
+        for (int squareRow = start; (increment ? squareRow < BOARD_SIZE_IN_SQUARES : squareRow >= 0);
+             squareRow += (increment ? 1 : -1)) {
             printHeaderText(out, Integer.toString(8 - squareRow));
-            for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
+            for (int boardCol = start; (increment ? boardCol < BOARD_SIZE_IN_SQUARES : boardCol >= 0);
+                 boardCol += (increment ? 1 : -1)) {
+                // set white or black beforehand
+                FuncInter func = null;
+                if (squareRow % 2 == 0 & boardCol % 2 == 0){
+                    func = () -> setWhite(out);
+                }
+                else if (squareRow % 2 == 0 & boardCol % 2 == 1){
+                    func = () -> setBlack(out);
+                }
+                else if (squareRow % 2 == 1 & boardCol % 2 == 0){
+                    func = () -> setBlack(out);
+                }
+                else{
+                    func = () -> setWhite(out);
+                }
+                func.execute();
                 out.print(EMPTY);
                 // print based on what is next on the chessboard
+                if (board.getPiece(new ChessPosition(8-squareRow, 1+boardCol)).getTeamColor() == ChessGame.TeamColor.WHITE){
+                    out.print(SET_TEXT_COLOR_RED);
+                    out.print(pieceChar(board, 8-squareRow, 1+boardCol));
+                }
+                else{
+                    out.print(SET_TEXT_COLOR_BLUE);
+                    out.print(pieceChar(board, 8-squareRow, 1+boardCol));
+                }
+                func.execute();
                 out.print(EMPTY);
                 setLightGrey(out);
             }
             setBlack(out);
             out.println();
         }
+    }
+
+    private static String pieceChar(ChessBoard board, int row, int col) {
+        return switch (board.getPiece(new ChessPosition(row, col)).getPieceType()) {
+            case PAWN -> "P";
+            case KNIGHT -> "N";
+            case BISHOP -> "B";
+            case ROOK -> "R";
+            case QUEEN -> "Q";
+            case KING -> "K";
+            default -> "";
+        };
     }
 
     private static void setWhite(PrintStream out) {
@@ -243,49 +284,9 @@ public class UiClient {
         out.print(SET_TEXT_COLOR_BLACK);
     }
 
-    private static void setRed(PrintStream out) {
-        out.print(SET_BG_COLOR_RED);
-        out.print(SET_TEXT_COLOR_RED);
-    }
-
     private static void setLightGrey(PrintStream out) {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_LIGHT_GREY);
-    }
-
-    private static void printWhiteOnWhite(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_RED);
-        out.print(player);
-        setWhite(out);
-    }
-
-    private static void printWhiteOnBlack(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_RED);
-        out.print(player);
-        setWhite(out);
-    }
-
-    private static void printBlackOnWhite(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_BLUE);
-        out.print(player);
-        setWhite(out);
-    }
-
-    private static void printBlackOnBlack(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_BLUE);
-        out.print(player);
-        setWhite(out);
-    }
-    private void printBoardWhite(ChessGame game) {
-        return;
-    }
-
-    private void printBoardBlack(ChessGame game) {
-        return;
     }
 
     private void assertLoggedIn() throws DataAccessException {
