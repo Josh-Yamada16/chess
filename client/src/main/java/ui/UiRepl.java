@@ -1,3 +1,5 @@
+package ui;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
