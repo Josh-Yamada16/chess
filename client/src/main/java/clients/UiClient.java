@@ -1,17 +1,17 @@
 package clients;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import exception.DataAccessException;
 import model.AuthData;
-import model.GameData;
 import model.UserData;
 import requests.JoinGameRequest;
 import server.ServerFacade;
 
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
+import static ui.EscapeSequences.*;
 
 public class UiClient {
     private String username = null;
@@ -172,6 +172,114 @@ public class UiClient {
         throw new DataAccessException(400, "Expected: <game#> <playerColor>");
     }
 
+    public String observeGame(String... params) throws DataAccessException{
+        return "";
+    }
+
+    private static final int BOARD_SIZE_IN_SQUARES = 8;
+    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
+    private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
+
+    // Padded characters.
+    private static final String EMPTY = " ";
+
+    private void printWhitePov() {
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print(ERASE_SCREEN);
+        drawHeaders(out);
+        drawChessBoard(out);
+        drawHeaders(out);
+    }
+
+    private static void drawHeaders(PrintStream out) {
+        setLightGrey(out);
+        out.print(EMPTY);
+        String[] headers = { "a", "b", "c", "d", "e", "f", "g", "h" };
+        for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
+            drawHeader(out, headers[boardCol]);
+        }
+        setLightGrey(out);
+        out.print(EMPTY);
+        setBlack(out);
+        out.println();
+    }
+
+    private static void drawHeader(PrintStream out, String headerText) {
+        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
+        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+        out.print(EMPTY.repeat(prefixLength));
+        printHeaderText(out, headerText);
+        out.print(EMPTY.repeat(suffixLength));
+    }
+
+    private static void printHeaderText(PrintStream out, String text) {
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(text);
+        setLightGrey(out);
+    }
+
+    private static void drawChessBoard(PrintStream out) {
+        for (int squareRow = 0; squareRow < BOARD_SIZE_IN_SQUARES; ++squareRow) {
+            printHeaderText(out, Integer.toString(8 - squareRow));
+            for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
+                out.print(EMPTY);
+                // print based on what is next on the chessboard
+                out.print(EMPTY);
+                setLightGrey(out);
+            }
+            setBlack(out);
+            out.println();
+        }
+    }
+
+    private static void setWhite(PrintStream out) {
+        out.print(SET_BG_COLOR_WHITE);
+        out.print(SET_TEXT_COLOR_BLUE);
+    }
+
+    private static void setBlack(PrintStream out) {
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_BLACK);
+    }
+
+    private static void setRed(PrintStream out) {
+        out.print(SET_BG_COLOR_RED);
+        out.print(SET_TEXT_COLOR_RED);
+    }
+
+    private static void setLightGrey(PrintStream out) {
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_TEXT_COLOR_LIGHT_GREY);
+    }
+
+    private static void printWhiteOnWhite(PrintStream out, String player) {
+        out.print(SET_BG_COLOR_WHITE);
+        out.print(SET_TEXT_COLOR_RED);
+        out.print(player);
+        setWhite(out);
+    }
+
+    private static void printWhiteOnBlack(PrintStream out, String player) {
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_RED);
+        out.print(player);
+        setWhite(out);
+    }
+
+    private static void printBlackOnWhite(PrintStream out, String player) {
+        out.print(SET_BG_COLOR_WHITE);
+        out.print(SET_TEXT_COLOR_BLUE);
+        out.print(player);
+        setWhite(out);
+    }
+
+    private static void printBlackOnBlack(PrintStream out, String player) {
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_BLUE);
+        out.print(player);
+        setWhite(out);
+    }
     private void printBoardWhite(ChessGame game) {
         return;
     }
