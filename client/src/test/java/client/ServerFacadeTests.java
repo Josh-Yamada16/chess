@@ -10,7 +10,6 @@ import requests.JoinGameRequest;
 import server.Server;
 import server.ServerFacade;
 
-import java.net.HttpURLConnection;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,7 +20,6 @@ public class ServerFacadeTests {
     private static Server server;
     private static ServerFacade serverFacade;
     private static UserData existingUser, newUser;
-    private static GameData newGame;
 
     @BeforeAll
     public static void init() {
@@ -32,7 +30,6 @@ public class ServerFacadeTests {
 
         existingUser = new UserData("ExistingUser", "existingUserPassword", "eu@mail.com");
         newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
-        newGame = new GameData(0, null, null, "testGame", null);
     }
 
     @BeforeEach
