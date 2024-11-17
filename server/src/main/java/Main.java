@@ -6,7 +6,6 @@ public class Main {
      * Starts the server on the given port. If port is 0 then a random port is used.
      */
     public static void main(String[] args) {
-//        boolean changeDatAcc = false;
         try {
             var port = 8080;
             if (args.length >= 1) {

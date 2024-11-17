@@ -39,11 +39,15 @@ public class ServerFacade {
     }
 
     public ArrayList<GameData> listGames(String authToken) throws DataAccessException {
-        var path = "/game";
-        record ListGamesResponse(ArrayList<GameData> gameList) {
+        try{
+            var path = "/game";
+            record ListGamesResponse(ArrayList<GameData> games) {
+            }
+            var response = this.makeRequest("GET", path, null, ListGamesResponse.class, authToken);
+            return response.games();
+        } catch (DataAccessException ex) {
+            return null;
         }
-        var response = this.makeRequest("GET", path, null, ListGamesResponse.class, authToken);
-        return response.gameList();
     }
 
     public boolean createGame(String gameName, String authToken) throws DataAccessException {
@@ -57,10 +61,10 @@ public class ServerFacade {
         }
     }
 
-    public boolean joinGame(JoinGameRequest request) throws DataAccessException {
+    public boolean joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
         try{
             var path = "/game";
-            this.makeRequest("PUT", path, request, null, null);
+            this.makeRequest("PUT", path, request, null, authToken);
             return true;
         } catch (Exception e){
             return false;

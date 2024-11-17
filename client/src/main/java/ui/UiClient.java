@@ -158,7 +158,7 @@ public class UiClient {
             int num = Integer.parseInt(params[0]);
             if (num > 0 & num <= games.size()){
                 JoinGameRequest req = new JoinGameRequest(color, games.get(num).gameID());
-                if (server.joinGame(req)){
+                if (server.joinGame(req, this.authToken)){
                     state = State.INGAME;
                     System.out.print(SET_TEXT_COLOR_BLUE + String.format("Game %d Successfully joined!", num));
                     printWhitePov(games.get(num).game().getBoard());

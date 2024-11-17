@@ -105,6 +105,7 @@ public class Server {
     // added exception handling for the listgames endpoint
     private Object listGames(Request req, Response res) {
         try{
+            res.type("application/json");
             String authToken = req.headers("Authorization");
             var list = gameService.listGames(authToken).toArray();
             return new Gson().toJson(Map.of("games", list));
