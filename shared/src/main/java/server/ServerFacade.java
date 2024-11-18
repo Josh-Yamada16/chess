@@ -23,9 +23,13 @@ public class ServerFacade {
     }
 
     public AuthData login(String username, String password) throws DataAccessException {
-        var path = "/session";
-        UserData user = new UserData(username, password, null);
-        return this.makeRequest("POST", path, user, AuthData.class, null);
+        try {
+            var path = "/session";
+            UserData user = new UserData(username, password, null);
+            return this.makeRequest("POST", path, user, AuthData.class, null);
+        } catch (DataAccessException ex) {
+            throw new DataAccessException(ex.statusCode(), ex.getMessage());
+        }
     }
 
     public boolean logout(String authToken) {

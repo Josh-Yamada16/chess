@@ -2,7 +2,7 @@ package ui;
 
 import java.util.Scanner;
 
-import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
+import static ui.EscapeSequences.*;
 
 public class UiRepl {
     private final UiClient uiClient;
@@ -13,12 +13,13 @@ public class UiRepl {
 
     public void run() {
         System.out.println("\uD83D\uDC36 Welcome to Chess. Sign in to start.");
-        System.out.print(uiClient.help());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        FuncInter func = null;
+        FuncInter func;
         while (!result.equals("quit")) {
+            System.out.print(RESET_BG_COLOR + RESET_TEXT_COLOR);
+            System.out.print(SET_TEXT_COLOR_BLUE + uiClient.help());
             if (uiClient.state == State.PRESIGNIN){
                 func = this::printLoggedoutPrompt;
             }

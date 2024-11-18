@@ -69,7 +69,7 @@ public class ServerFacadeTests {
 
     @Test
     @DisplayName("Login Invalid User")
-    public void loginInvalidUser() throws DataAccessException {
+    public void loginInvalidUser() {
         assertThrows(DataAccessException.class, () -> serverFacade.login(newUser.username(), newUser.password()));
     }
 
