@@ -69,7 +69,7 @@ public class UiClient {
                     - 'create' game <gameName>
                     - 'list' games
                     - 'join' game <game#> <playerColor>
-                    - 'observe' game <gameId>
+                    - 'observe' game <game#>
                     - 'help'
                     """;
         }
@@ -159,7 +159,7 @@ public class UiClient {
             int counter = 1;
             for (var game : games) {
                 result.append(counter).append(". ");
-                result.append("ID: ").append(game.gameID()).append(",\t");
+//                result.append("ID: ").append(game.gameID()).append(",\t");
                 result.append("Game Name: ").append(game.gameName()).append(",\t");
                 result.append("White: ").append(game.whiteUsername() == null ? "*Available*" : game.whiteUsername()).append(",\t");
                 result.append("Black: ").append(game.blackUsername() == null ? "*Available*" : game.blackUsername());
@@ -184,7 +184,12 @@ public class UiClient {
             else{
                 return SET_TEXT_COLOR_RED + "**Expected: <white> OR <black>**\n";
             }
-            int num = Integer.parseInt(params[0]) - 1;
+            int num;
+            try{
+                num = Integer.parseInt(params[0]) - 1;
+            } catch (NumberFormatException ex){
+                return SET_TEXT_COLOR_RED + "**Expected: Game Number**\n";
+            }
             if (num > -1 & num <= games.size()-1){
                 JoinGameRequest req = new JoinGameRequest(color, games.get(num).gameID());
                 if (server.joinGame(req, this.authToken)){
@@ -210,9 +215,14 @@ public class UiClient {
 
     public String observeGame(String... params) throws DataAccessException{
         var games = server.listGames(this.authToken);
-        int num = Integer.parseInt(params[0]) - 1;
+        int num;
+        try{
+            num = Integer.parseInt(params[0]) - 1;
+        } catch (NumberFormatException ex){
+            return SET_TEXT_COLOR_RED + "**Expected: Game Number**\n";
+        }
         if (num > -1 & num <= games.size() - 1){
-            System.out.printf("**Currently Observing game %d**\n", num);
+            System.out.printf("**Currently Observing game %d**\n", num+1);
             printWhitePov(games.get(num).game().getBoard());
             System.out.println();
             printBlackPov(games.get(num).game().getBoard());
@@ -281,7 +291,7 @@ public class UiClient {
             for (int boardCol = start; (increment ? boardCol < BOARD_SIZE_IN_SQUARES : boardCol >= 0);
                  boardCol += (increment ? 1 : -1)) {
                 // set white or black beforehand
-                FuncInter func = null;
+                FuncInter func;
                 if (squareRow % 2 == 0 & boardCol % 2 == 0){
                     func = () -> setWhite(out);
                 }
