@@ -6,6 +6,7 @@ import model.UserData;
 import requests.JoinGameRequest;
 import server.ServerFacade;
 
+import javax.xml.crypto.Data;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -153,7 +154,6 @@ public class UiClient {
             int counter = 1;
             for (var game : games) {
                 result.append(counter).append(". ");
-//                result.append("ID: ").append(game.gameID()).append(",\t");
                 result.append("Game Name: ").append(game.gameName()).append(",\t");
                 result.append("White: ").append(game.whiteUsername() == null ? "*Available*" : game.whiteUsername()).append(",\t");
                 result.append("Black: ").append(game.blackUsername() == null ? "*Available*" : game.blackUsername());
@@ -168,6 +168,7 @@ public class UiClient {
     public String joinGame(String... params) throws DataAccessException {
         var games = server.listGames(this.authToken);
         if (params.length == 2) {
+            assertLoggedIn();
             JoinGameRequest.PlayerColor color;
             if (params[1].equalsIgnoreCase("white")){
                 color = JoinGameRequest.PlayerColor.WHITE;
@@ -210,26 +211,36 @@ public class UiClient {
     public String observeGame(String... params) throws DataAccessException{
         var games = server.listGames(this.authToken);
         int num;
-        try{
-            num = Integer.parseInt(params[0]) - 1;
-        } catch (NumberFormatException ex){
-            return SET_TEXT_COLOR_RED + "**Expected: Game Number**\n";
-        }
-        if (num > -1 & num <= games.size() - 1){
-            System.out.printf("**Currently Observing game %d**\n", num+1);
-            BoardPrinter.printWhitePov(games.get(num).game().getBoard());
-            System.out.println();
-            BoardPrinter.printBlackPov(games.get(num).game().getBoard());
+        if (params.length == 1) {
+            try {
+                num = Integer.parseInt(params[0]) - 1;
+            } catch (NumberFormatException ex) {
+                return SET_TEXT_COLOR_RED + "**Expected: Game Number**\n";
+            }
+            if (num > -1 & num <= games.size() - 1) {
+                System.out.printf("**Currently Observing game %d**\n", num + 1);
+                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
+                System.out.println();
+                BoardPrinter.printBlackPov(games.get(num).game().getBoard());
+            } else {
+                return SET_TEXT_COLOR_RED + "**Game not available**\n";
+            }
+            return "\n";
         }
         else{
-            return SET_TEXT_COLOR_RED + "**Game not available**\n";
+            return SET_TEXT_COLOR_RED + "Expected: *JUST GAME#*\n";
         }
-        return "\n";
     }
 
     private void assertLoggedIn() throws DataAccessException {
         if (this.state == State.PRESIGNIN) {
-            throw new DataAccessException(400, "You must sign in");
+            throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must sign in**");
+        }
+    }
+
+    private void assertInGame() throws DataAccessException {
+        if (this.state == State.INGAME) {
+            throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You be in game**");
         }
     }
 }
