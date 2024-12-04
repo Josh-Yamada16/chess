@@ -1,14 +1,17 @@
 package ui;
 
+import websocket.NotificationHandler;
+import websocket.messages.ServerMessage;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class UiRepl {
+public class UiRepl implements NotificationHandler {
     private final UiClient uiClient;
 
     public UiRepl(String serverUrl) {
-        uiClient = new UiClient(serverUrl);
+        uiClient = new UiClient(serverUrl, this);
     }
 
     public void run() {
@@ -39,6 +42,12 @@ public class UiRepl {
         }
         System.out.println();
     }
+
+    @Override
+    public void notify(ServerMessage message) {
+
+    }
+
     interface FuncInter{
         void execute();
     }

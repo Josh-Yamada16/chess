@@ -5,8 +5,8 @@ import model.AuthData;
 import model.UserData;
 import requests.JoinGameRequest;
 import server.ServerFacade;
+import websocket.*;
 
-import javax.xml.crypto.Data;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -16,9 +16,14 @@ public class UiClient {
     private String authToken = null;
     private final ServerFacade server;
     public State state = State.PRESIGNIN;
+    private final String serverUrl;
+    private final NotificationHandler notificationHandler;
+    private WebSocketFacade ws;
 
-    public UiClient(String serverUrl) {
+    public UiClient(String serverUrl, NotificationHandler notificationHandler) {
+        this.serverUrl = serverUrl;
         server = new ServerFacade(serverUrl);
+        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input) {
