@@ -39,6 +39,11 @@ public class UiClient {
                 case "list" -> listGames(params);
                 case "join" -> joinGame(params);
                 case "observe" -> observeGame(params);
+                case "redraw" -> redraw(params);
+                case "leave" -> leave(params);
+                case "make" -> make(params);
+                case "resign" -> resign(params);
+                case "highlight" -> highlight(params);
                 case "quit" -> "quit";
                 case "clear" -> clear();
                 case "help" -> "";
@@ -75,6 +80,12 @@ public class UiClient {
         }
         else {
             return """
+                    - 'redraw' chess board
+                    - 'leave'
+                    - 'move' <piece position> <end position>
+                    - 'resign'
+                    - 'highlight' legal moves <piece position>
+                    - 'help'
                     """;
         }
     }
@@ -193,11 +204,13 @@ public class UiClient {
             if (num > -1 & num <= games.size()-1){
                 JoinGameRequest req = new JoinGameRequest(color, games.get(num).gameID());
                 if (server.joinGame(req, this.authToken)){
-//                    state = State.INGAME;
+                    state = State.INGAME;
                     System.out.print(SET_TEXT_COLOR_BLUE + String.format("**Game %d Successfully joined!**\n", num+1));
-                    BoardPrinter.printWhitePov(games.get(num).game().getBoard());
-                    System.out.println();
-                    BoardPrinter.printBlackPov(games.get(num).game().getBoard());
+                    ws = new WebSocketFacade(serverUrl, notificationHandler);
+                    ws.connect(username, color, games.get(num).gameID());
+//                    BoardPrinter.printWhitePov(games.get(num).game().getBoard());
+//                    System.out.println();
+//                    BoardPrinter.printBlackPov(games.get(num).game().getBoard());
                 }
                 else{
                     return SET_TEXT_COLOR_RED + "**Team Already Taken**\n";
@@ -225,8 +238,6 @@ public class UiClient {
             if (num > -1 & num <= games.size() - 1) {
                 System.out.printf("**Currently Observing game %d**\n", num + 1);
                 BoardPrinter.printWhitePov(games.get(num).game().getBoard());
-                System.out.println();
-                BoardPrinter.printBlackPov(games.get(num).game().getBoard());
             } else {
                 return SET_TEXT_COLOR_RED + "**Game not available**\n";
             }
@@ -237,6 +248,98 @@ public class UiClient {
         }
     }
 
+
+    public String redraw(String... params) throws DataAccessException {
+        try {
+            if (params.length == 2) {
+                AuthData result = server.login(params[0], params[1]);
+                if (result != null) {
+                    this.username = result.username();
+                    this.authToken = result.authToken();
+                    state = State.POSTSIGNIN;
+                    return String.format("**Welcome Back %s!**\n", this.username);
+                }
+            }
+            return SET_TEXT_COLOR_RED + "**Expected: <username> <password>**\n";
+        } catch (DataAccessException ex) {
+            if (ex.statusCode() == 500){
+                return SET_TEXT_COLOR_RED + "**Invalid Login**\n";
+            }
+        }
+        return "";
+    }
+
+    public String leave(String... params) throws DataAccessException {
+        try{
+            if (params.length == 3) {
+                UserData user = new UserData(params[0], params[1], params[2]);
+                AuthData result = server.registerUser(user);
+                if (result != null) {
+                    this.username = result.username();
+                    this.authToken = result.authToken();
+                    state = State.POSTSIGNIN;
+                    return String.format("**Welcome %s!**\n", this.username);
+                }
+            }
+            return SET_TEXT_COLOR_RED + "**Expected: <username> <password> <email>**\n";
+        } catch (DataAccessException ex) {
+            if (ex.statusCode() == 500){
+                return SET_TEXT_COLOR_RED + "**Login already in use!**\n";
+            }
+        }
+        return "";
+    }
+
+    public String make(String... params) throws DataAccessException {
+        if (params.length == 0) {
+            assertLoggedIn();
+            if (server.logout(this.authToken)){
+                state = State.PRESIGNIN;
+                return String.format("**See you next time %s!**\n", username);
+            }
+            else{
+                return SET_TEXT_COLOR_RED + "**Unauthorized**\n";
+            }
+        }
+        return SET_TEXT_COLOR_RED + "Expected: *JUST LOGOUT*\n";
+    }
+
+    public String resign(String... params) throws DataAccessException {
+        if (params.length == 1) {
+            assertLoggedIn();
+            if (server.createGame(params[0], this.authToken)){
+                return "**Your game has been created!**\n";
+            }
+            else{
+                return SET_TEXT_COLOR_RED + "**Unauthorized**\n";
+            }
+        }
+        return SET_TEXT_COLOR_RED + "**Expected: <gameName>**\n";
+
+    }
+
+    public String highlight(String... params) throws DataAccessException {
+        if (params.length == 0) {
+            assertLoggedIn();
+            var games = server.listGames(this.authToken);
+            if (games.isEmpty()){
+                return "**No Games Yet**\n";
+            }
+            var result = new StringBuilder();
+            int counter = 1;
+            for (var game : games) {
+                result.append(counter).append(". ");
+                result.append("Game Name: ").append(game.gameName()).append(",\t");
+                result.append("White: ").append(game.whiteUsername() == null ? "*Available*" : game.whiteUsername()).append(",\t");
+                result.append("Black: ").append(game.blackUsername() == null ? "*Available*" : game.blackUsername());
+                result.append('\n');
+                counter++;
+            }
+            return result.append("\n").toString();
+        }
+        return SET_TEXT_COLOR_RED + "Expected: *JUST LIST*\n";
+    }
+
     private void assertLoggedIn() throws DataAccessException {
         if (this.state == State.PRESIGNIN) {
             throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must sign in**");
@@ -245,7 +348,7 @@ public class UiClient {
 
     private void assertInGame() throws DataAccessException {
         if (this.state == State.INGAME) {
-            throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You be in game**");
+            throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must be in game**");
         }
     }
 }

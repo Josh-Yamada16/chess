@@ -1,6 +1,7 @@
 package ui;
 
 import websocket.NotificationHandler;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.Scanner;
@@ -8,7 +9,7 @@ import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
 public class UiRepl implements NotificationHandler {
-    private final UiClient uiClient;
+    private UiClient uiClient;
 
     public UiRepl(String serverUrl) {
         uiClient = new UiClient(serverUrl, this);
@@ -45,7 +46,7 @@ public class UiRepl implements NotificationHandler {
 
     @Override
     public void notify(ServerMessage message) {
-
+        System.out.println(SET_TEXT_COLOR_BLUE + message.message());
     }
 
     interface FuncInter{

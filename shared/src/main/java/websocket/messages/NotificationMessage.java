@@ -7,4 +7,9 @@ public class NotificationMessage extends ServerMessage{
         super(type);
         this.message = message;
     }
+
+    @Override
+    public String getMessage(){
+        return message;
+    }
 }
