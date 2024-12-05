@@ -1,12 +1,14 @@
 package websocket.commands;
 
-import chess.ChessMove;
-
 public class LeaveCommand extends UserGameCommand{
-    private ChessMove move;
+    private String username;
 
-    public LeaveCommand(CommandType commandType, String authToken, Integer gameID) {
+    public LeaveCommand(CommandType commandType, String authToken, Integer gameID, String username) {
         super(commandType, authToken, gameID);
-        this.move = move;
+        username = username;
+    }
+
+    public String getUsername() {
+        return username;
     }
 }

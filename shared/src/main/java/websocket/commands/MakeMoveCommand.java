@@ -9,4 +9,8 @@ public class MakeMoveCommand extends UserGameCommand{
         super(commandType, authToken, gameID);
         this.move = move;
     }
+
+    public ChessMove getMove() {
+        return move;
+    }
 }

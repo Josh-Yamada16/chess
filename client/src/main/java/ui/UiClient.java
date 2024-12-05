@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import exception.DataAccessException;
 import model.AuthData;
 import model.UserData;
@@ -19,6 +20,7 @@ public class UiClient {
     private final String serverUrl;
     private final NotificationHandler notificationHandler;
     private WebSocketFacade ws;
+    private ChessGame activeGame;
 
     public UiClient(String serverUrl, NotificationHandler notificationHandler) {
         this.serverUrl = serverUrl;
@@ -206,8 +208,9 @@ public class UiClient {
                 if (server.joinGame(req, this.authToken)){
                     state = State.INGAME;
                     System.out.print(SET_TEXT_COLOR_BLUE + String.format("**Game %d Successfully joined!**\n", num+1));
+                    activeGame = games.get(num).game();
                     ws = new WebSocketFacade(serverUrl, notificationHandler);
-                    ws.connect(username, color, games.get(num).gameID());
+                    ws.connect(username, color, games.get(num).gameID(), authToken);
 //                    BoardPrinter.printWhitePov(games.get(num).game().getBoard());
 //                    System.out.println();
 //                    BoardPrinter.printBlackPov(games.get(num).game().getBoard());
@@ -251,19 +254,15 @@ public class UiClient {
 
     public String redraw(String... params) throws DataAccessException {
         try {
-            if (params.length == 2) {
-                AuthData result = server.login(params[0], params[1]);
-                if (result != null) {
-                    this.username = result.username();
-                    this.authToken = result.authToken();
-                    state = State.POSTSIGNIN;
-                    return String.format("**Welcome Back %s!**\n", this.username);
-                }
+            if (params.length == 0) {
+                // print board depending on POV
+//                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
+//                BoardPrinter.printBlackPov(games.get(num).game().getBoard());
             }
-            return SET_TEXT_COLOR_RED + "**Expected: <username> <password>**\n";
+            return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
         } catch (DataAccessException ex) {
             if (ex.statusCode() == 500){
-                return SET_TEXT_COLOR_RED + "**Invalid Login**\n";
+                return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
             }
         }
         return "";
@@ -271,17 +270,11 @@ public class UiClient {
 
     public String leave(String... params) throws DataAccessException {
         try{
-            if (params.length == 3) {
-                UserData user = new UserData(params[0], params[1], params[2]);
-                AuthData result = server.registerUser(user);
-                if (result != null) {
-                    this.username = result.username();
-                    this.authToken = result.authToken();
-                    state = State.POSTSIGNIN;
-                    return String.format("**Welcome %s!**\n", this.username);
-                }
+            if (params.length == 0) {
+                ws.leaveGame(this.username, 0, this.authToken);
+                // remember to set activeGame to null
             }
-            return SET_TEXT_COLOR_RED + "**Expected: <username> <password> <email>**\n";
+            return SET_TEXT_COLOR_RED + "Expected: *JUST LEAVE*\n";
         } catch (DataAccessException ex) {
             if (ex.statusCode() == 500){
                 return SET_TEXT_COLOR_RED + "**Login already in use!**\n";
@@ -291,14 +284,15 @@ public class UiClient {
     }
 
     public String make(String... params) throws DataAccessException {
-        if (params.length == 0) {
-            assertLoggedIn();
+        if (params.length == 2) {
+            // need to parse the numbers and letters to convert them to coordinates
+            assertInGame();
             if (server.logout(this.authToken)){
                 state = State.PRESIGNIN;
                 return String.format("**See you next time %s!**\n", username);
             }
             else{
-                return SET_TEXT_COLOR_RED + "**Unauthorized**\n";
+                return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
             }
         }
         return SET_TEXT_COLOR_RED + "Expected: *JUST LOGOUT*\n";
@@ -314,30 +308,22 @@ public class UiClient {
                 return SET_TEXT_COLOR_RED + "**Unauthorized**\n";
             }
         }
-        return SET_TEXT_COLOR_RED + "**Expected: <gameName>**\n";
+        return SET_TEXT_COLOR_RED + "Expected: *JUST RESIGN*\n";
 
     }
 
     public String highlight(String... params) throws DataAccessException {
         if (params.length == 0) {
-            assertLoggedIn();
-            var games = server.listGames(this.authToken);
-            if (games.isEmpty()){
-                return "**No Games Yet**\n";
-            }
-            var result = new StringBuilder();
-            int counter = 1;
-            for (var game : games) {
-                result.append(counter).append(". ");
-                result.append("Game Name: ").append(game.gameName()).append(",\t");
-                result.append("White: ").append(game.whiteUsername() == null ? "*Available*" : game.whiteUsername()).append(",\t");
-                result.append("Black: ").append(game.blackUsername() == null ? "*Available*" : game.blackUsername());
-                result.append('\n');
-                counter++;
-            }
-            return result.append("\n").toString();
+            assertInGame();
+            // print the board again based on the POV and the available piece moves
+//                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
+//                System.out.println();
+//                BoardPrinter.printBlackPov(games.get(num).game().getBoard());
         }
-        return SET_TEXT_COLOR_RED + "Expected: *JUST LIST*\n";
+        else{
+            return SET_TEXT_COLOR_RED + "** Expected: <piece position>**\n";
+        }
+        return "";
     }
 
     private void assertLoggedIn() throws DataAccessException {

@@ -3,10 +3,14 @@ package websocket.commands;
 import chess.ChessMove;
 
 public class ResignCommand extends UserGameCommand{
-    private ChessMove move;
+    private String username;
 
-    public ResignCommand(CommandType commandType, String authToken, Integer gameID) {
+    public ResignCommand(CommandType commandType, String authToken, Integer gameID, String username) {
         super(commandType, authToken, gameID);
-        this.move = move;
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
     }
 }

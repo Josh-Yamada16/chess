@@ -45,8 +45,8 @@ public class UiRepl implements NotificationHandler {
     }
 
     @Override
-    public void notify(ServerMessage message) {
-        System.out.println(SET_TEXT_COLOR_BLUE + message.message());
+    public void notify(NotificationMessage message) {
+
     }
 
     interface FuncInter{
