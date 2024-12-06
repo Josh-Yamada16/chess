@@ -1,18 +1,22 @@
 package ui;
 
 import websocket.NotificationHandler;
+import websocket.WebSocketHandler;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
+import javax.websocket.DeploymentException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class UiRepl implements NotificationHandler {
+public class UiRepl {
     private UiClient uiClient;
 
-    public UiRepl(String serverUrl) {
-        uiClient = new UiClient(serverUrl, this);
+    public UiRepl(String serverUrl) throws DeploymentException, URISyntaxException, IOException {
+        uiClient = new UiClient(serverUrl, new WebSocketHandler());
     }
 
     public void run() {
@@ -27,8 +31,11 @@ public class UiRepl implements NotificationHandler {
             if (uiClient.state == State.PRESIGNIN){
                 func = this::printLoggedoutPrompt;
             }
-            else{
+            else if (uiClient.state == State.POSTSIGNIN){
                 func = this::printLoggedinPrompt;
+            }
+            else{
+                func = this::printInGamePrompt;
             }
             func.execute();
             String line = scanner.nextLine();
@@ -44,11 +51,6 @@ public class UiRepl implements NotificationHandler {
         System.out.println();
     }
 
-    @Override
-    public void notify(NotificationMessage message) {
-
-    }
-
     interface FuncInter{
         void execute();
     }
@@ -61,5 +63,7 @@ public class UiRepl implements NotificationHandler {
         System.out.print("\n" + "[LOGGED_IN]" + ">>> ");
     }
 
-
+    private void printInGamePrompt() {
+        System.out.print("\n" + "[IN_GAME]" + ">>> ");
+    }
 }

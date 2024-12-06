@@ -11,7 +11,7 @@ import requests.JoinGameRequest;
 import service.*;
 
 import spark.*;
-
+import websocket.WebSocketHandler;
 import java.util.Map;
 
 public class Server {
@@ -20,10 +20,12 @@ public class Server {
     private UserDAO userDAO = new MySqlUserDAO();
     private GameDAO gameDAO = new MySqlGameDAO();
     private AuthDAO authDAO = new MySqlAuthDAO();
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         userService = new UserService(userDAO, authDAO);
         gameService = new GameService(gameDAO, authDAO);
+        webSocketHandler = new WebSocketHandler();
     }
 
     public Server(int memory){
@@ -32,7 +34,8 @@ public class Server {
         userDAO = new MemoryUserDAO();
         userService = new UserService(userDAO, authDAO);
         gameService = new GameService(gameDAO, authDAO);
-    }
+        webSocketHandler = new WebSocketHandler();
+     }
 
     public int run(int port) {
         Spark.port(port);

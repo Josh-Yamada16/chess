@@ -3,6 +3,9 @@ package ui;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPosition;
+import exception.DataAccessException;
+import org.glassfish.grizzly.utils.Pair;
+import requests.JoinGameRequest;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +17,13 @@ public class BoardPrinter {
     private static final String EMPTY = " ";
 
     public BoardPrinter(){}
+
+    public static void printBasedOnPov(JoinGameRequest.PlayerColor color, ChessBoard board){
+        switch(color){
+            case WHITE -> printWhitePov(board);
+            case BLACK -> printBlackPov(board);
+        }
+    }
 
     public static void printWhitePov(ChessBoard board) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
@@ -132,5 +142,24 @@ public class BoardPrinter {
     private static void setLightGrey(PrintStream out) {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_LIGHT_GREY);
+    }
+
+    public static Pair<Integer, Integer> validateAndParseCoordinates(String coordinates) throws DataAccessException{
+        if (coordinates.length() == 2) {
+            char firstChar = coordinates.charAt(0);
+            char secondChar = coordinates.charAt(1);
+
+            if (Character.isLetter(firstChar) && Character.isDigit(secondChar)) {
+                int letterValue = firstChar - 'a' + 1;
+                int numberValue = Character.getNumericValue(secondChar);
+                return new Pair<>(letterValue, numberValue);
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            throw new DataAccessException(500, "");
+        }
     }
 }

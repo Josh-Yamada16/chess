@@ -8,6 +8,12 @@ import requests.JoinGameRequest;
 import server.ServerFacade;
 import websocket.*;
 
+import javax.websocket.ContainerProvider;
+import javax.websocket.DeploymentException;
+import javax.websocket.Session;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -18,14 +24,17 @@ public class UiClient {
     private final ServerFacade server;
     public State state = State.PRESIGNIN;
     private final String serverUrl;
-    private final NotificationHandler notificationHandler;
-    private WebSocketFacade ws;
+    private final WebSocketHandler notificationHandler;
+    private Session session;
     private ChessGame activeGame;
+    private JoinGameRequest.PlayerColor playerColor;
 
-    public UiClient(String serverUrl, NotificationHandler notificationHandler) {
+    public UiClient(String serverUrl, WebSocketHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
         this.serverUrl = serverUrl;
-        server = new ServerFacade(serverUrl);
         this.notificationHandler = notificationHandler;
+        URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
+        this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
+        server = new ServerFacade(serverUrl, session);
     }
 
     public String eval(String input) {
@@ -209,11 +218,9 @@ public class UiClient {
                     state = State.INGAME;
                     System.out.print(SET_TEXT_COLOR_BLUE + String.format("**Game %d Successfully joined!**\n", num+1));
                     activeGame = games.get(num).game();
-                    ws = new WebSocketFacade(serverUrl, notificationHandler);
-                    ws.connect(username, color, games.get(num).gameID(), authToken);
-//                    BoardPrinter.printWhitePov(games.get(num).game().getBoard());
-//                    System.out.println();
-//                    BoardPrinter.printBlackPov(games.get(num).game().getBoard());
+                    playerColor = color;
+                    server.connect(username, color, games.get(num).gameID(), authToken);
+                    BoardPrinter.printBasedOnPov(color, games.get(num).game().getBoard());
                 }
                 else{
                     return SET_TEXT_COLOR_RED + "**Team Already Taken**\n";
@@ -240,6 +247,7 @@ public class UiClient {
             }
             if (num > -1 & num <= games.size() - 1) {
                 System.out.printf("**Currently Observing game %d**\n", num + 1);
+                server.connectObserver(username, games.get(num).gameID(), authToken);
                 BoardPrinter.printWhitePov(games.get(num).game().getBoard());
             } else {
                 return SET_TEXT_COLOR_RED + "**Game not available**\n";
@@ -254,10 +262,9 @@ public class UiClient {
 
     public String redraw(String... params) throws DataAccessException {
         try {
+            assertInGame();
             if (params.length == 0) {
-                // print board depending on POV
-//                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
-//                BoardPrinter.printBlackPov(games.get(num).game().getBoard());
+                BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard());
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
         } catch (DataAccessException ex) {
@@ -270,9 +277,10 @@ public class UiClient {
 
     public String leave(String... params) throws DataAccessException {
         try{
+            assertInGame();
             if (params.length == 0) {
-                ws.leaveGame(this.username, 0, this.authToken);
-                // remember to set activeGame to null
+                server.leaveGame(this.username, 0, this.authToken);
+                // remember to set activeGame to null and playercolor
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST LEAVE*\n";
         } catch (DataAccessException ex) {
@@ -284,18 +292,21 @@ public class UiClient {
     }
 
     public String make(String... params) throws DataAccessException {
-        if (params.length == 2) {
-            // need to parse the numbers and letters to convert them to coordinates
-            assertInGame();
-            if (server.logout(this.authToken)){
-                state = State.PRESIGNIN;
-                return String.format("**See you next time %s!**\n", username);
-            }
-            else{
-                return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
+        try {
+            if (params.length == 2) {
+                // need to parse the numbers and letters to convert them to coordinates
+                assertInGame();
+                for (String st:params){
+                    var result = BoardPrinter.validateAndParseCoordinates(st);
+                    result.getFirst()
+
+
             }
         }
-        return SET_TEXT_COLOR_RED + "Expected: *JUST LOGOUT*\n";
+        return SET_TEXT_COLOR_RED + "**Expected: <start position> <end position>**\n";
+        } catch (DataAccessException e) {
+            return SET_TEXT_COLOR_RED + "**Expected: <letter><number> <letter><number>**";
+        }
     }
 
     public String resign(String... params) throws DataAccessException {

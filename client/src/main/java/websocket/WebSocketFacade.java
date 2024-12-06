@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-//need to extend Endpoint for websocket to work properly
 public class WebSocketFacade extends Endpoint {
 
     Session session;
@@ -27,15 +26,6 @@ public class WebSocketFacade extends Endpoint {
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
-
-            //set message handler
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    ServerMessage mess = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(mess);
-                }
-            });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }

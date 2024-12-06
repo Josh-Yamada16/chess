@@ -7,4 +7,8 @@ public class ConnectCommand extends UserGameCommand{
         super(commandType, authToken, gameID);
         this.username = username;
     }
+
+    public String getUsername() {
+        return username;
+    }
 }
