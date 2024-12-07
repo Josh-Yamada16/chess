@@ -145,21 +145,22 @@ public class BoardPrinter {
     }
 
     public static Pair<Integer, Integer> validateAndParseCoordinates(String coordinates) throws DataAccessException{
-        if (coordinates.length() == 2) {
-            char firstChar = coordinates.charAt(0);
-            char secondChar = coordinates.charAt(1);
+        char firstChar = coordinates.charAt(0);
+        char secondChar = coordinates.charAt(1);
 
-            if (Character.isLetter(firstChar) && Character.isDigit(secondChar)) {
-                int letterValue = firstChar - 'a' + 1;
-                int numberValue = Character.getNumericValue(secondChar);
-                return new Pair<>(letterValue, numberValue);
+        if (Character.isLetter(firstChar) && Character.isDigit(secondChar)) {
+            int letterValue = Character.toLowerCase(firstChar) - 'a' + 1;
+            if (letterValue > 8 || letterValue < 1) {
+                throw new DataAccessException(500, "**Expected: a letter A-G**");
             }
-            else {
-                return null;
+            int numberValue = Character.getNumericValue(secondChar);
+            if (numberValue > 8 || numberValue < 1) {
+                throw new DataAccessException(500, "**Expected: a number 1-8**");
             }
+            return new Pair<>(letterValue, numberValue);
         }
         else {
-            throw new DataAccessException(500, "");
+            throw new DataAccessException(500, "**Expected: A-G/1-8**");
         }
     }
 }

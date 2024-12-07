@@ -19,7 +19,7 @@ public class ServerFacade {
 
     public ServerFacade(String url, Session session) {
         serverUrl = url;
-        session = session;
+        this.session = session;
     }
 
     public AuthData registerUser(UserData user) throws DataAccessException {
@@ -101,8 +101,6 @@ public class ServerFacade {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
-
-
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {

@@ -1,6 +1,9 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import exception.DataAccessException;
 import model.AuthData;
 import model.UserData;
@@ -296,30 +299,30 @@ public class UiClient {
             if (params.length == 2) {
                 // need to parse the numbers and letters to convert them to coordinates
                 assertInGame();
-                for (String st:params){
-                    var result = BoardPrinter.validateAndParseCoordinates(st);
-                    result.getFirst()
-
-
+                var result = BoardPrinter.validateAndParseCoordinates(params[0]);
+                var result1 = BoardPrinter.validateAndParseCoordinates(params[1]);
+                ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
+                ChessPosition end = new ChessPosition(result1.getFirst(), result1.getSecond());
+                // make a route where the pawn is going to be promoted
+                ChessMove thingy = new ChessMove(start, end, null);
+                activeGame.makeMove(thingy);
             }
-        }
-        return SET_TEXT_COLOR_RED + "**Expected: <start position> <end position>**\n";
-        } catch (DataAccessException e) {
-            return SET_TEXT_COLOR_RED + "**Expected: <letter><number> <letter><number>**";
+            return SET_TEXT_COLOR_RED + "**Expected: <start position(A-G/1-8)> <end position(A-G/1-8)>**\n";
+        } catch (DataAccessException|InvalidMoveException e) {
+            return SET_TEXT_COLOR_RED + e.getMessage();
         }
     }
 
     public String resign(String... params) throws DataAccessException {
-        if (params.length == 1) {
-            assertLoggedIn();
-            if (server.createGame(params[0], this.authToken)){
-                return "**Your game has been created!**\n";
+        try{
+            if (params.length == 0) {
+                assertInGame();
+
             }
-            else{
-                return SET_TEXT_COLOR_RED + "**Unauthorized**\n";
-            }
+            return SET_TEXT_COLOR_RED + "Expected: *JUST RESIGN*\n";
+        } catch (DataAccessException ex){
+            return SET_TEXT_COLOR_RED + ex.getMessage();
         }
-        return SET_TEXT_COLOR_RED + "Expected: *JUST RESIGN*\n";
 
     }
 
@@ -328,8 +331,6 @@ public class UiClient {
             assertInGame();
             // print the board again based on the POV and the available piece moves
 //                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
-//                System.out.println();
-//                BoardPrinter.printBlackPov(games.get(num).game().getBoard());
         }
         else{
             return SET_TEXT_COLOR_RED + "** Expected: <piece position>**\n";
