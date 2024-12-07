@@ -19,7 +19,7 @@ public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException {
+    public void onMessage(Session session, String message) throws IOException, DataAccessException {
         UserGameCommand com = new Gson().fromJson(message, UserGameCommand.class);
 
         switch (com.getCommandType()) {
