@@ -306,7 +306,7 @@ public class UiClient {
             else{
                 return SET_TEXT_COLOR_RED + "**Expected: <start position(A-G/1-8)> <end position(A-G/1-8)>**\n";
             }
-        } catch (DataAccessException | InvalidMoveException | RuntimeException | IOException e) {
+        } catch (DataAccessException | InvalidMoveException | RuntimeException e) {
             return SET_TEXT_COLOR_RED + e.getMessage();
         }
     }

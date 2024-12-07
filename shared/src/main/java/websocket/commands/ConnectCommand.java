@@ -25,4 +25,8 @@ public class ConnectCommand extends UserGameCommand{
     public String getMessage(){
         return username + "joined as team" + team.name();
     }
+
+    public String getColor(){
+        return team.name();
+    }
 }

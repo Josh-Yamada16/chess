@@ -2,6 +2,7 @@ package utility;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPosition;
 import exception.DataAccessException;
 import org.glassfish.grizzly.utils.Pair;
@@ -164,5 +165,11 @@ public class BoardPrinter {
         }
     }
 
-    public static
+    public static Pair<String, String> convertMoveToString(ChessMove move){
+        ChessPosition start = move.getStartPosition();
+        ChessPosition end = move.getEndPosition();
+        String first = Integer.toString(start.getRow() - 8) + (char) ((start.getColumn()+1) + 'a' - 1);
+        String sec = Integer.toString(end.getRow() - 8) + (char) ((end.getColumn()+1) + 'a' - 1);
+        return new Pair<>(first, sec);
+    }
 }

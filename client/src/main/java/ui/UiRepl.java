@@ -1,7 +1,8 @@
 package ui;
 
+import chess.ChessGame;
 import websocket.NotificationHandler;
-import websocket.messages.NotificationMessage;
+import websocket.messages.*;
 
 import javax.websocket.DeploymentException;
 import java.io.IOException;
@@ -50,8 +51,15 @@ public class UiRepl implements NotificationHandler{
     }
 
     @Override
-    public void notify(NotificationMessage message) {
-        System.out.println(message.getMessage());
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()){
+            case NOTIFICATION, ERROR -> System.out.println(message.getMessage());
+            case LOAD_GAME -> loadGame((LoadGameMessage) message).getGame();
+        }
+    }
+
+    public void loadGame(ChessGame game){
+
     }
 
     interface FuncInter{

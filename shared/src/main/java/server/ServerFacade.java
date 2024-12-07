@@ -174,7 +174,7 @@ public class ServerFacade {
 
     public void makeMove(Integer gameID, String authToken, ChessMove move, String username) throws DataAccessException {
         try {
-            var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move, String username);
+            var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move, username);
             this.session.getBasicRemote().sendText(new Gson().toJson(make));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
@@ -204,7 +204,6 @@ public class ServerFacade {
         try {
             var action = new Action(Action.Type.EXIT, visitorName);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
-            this.session.close();
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
@@ -214,7 +213,6 @@ public class ServerFacade {
         try {
             var action = new Action(Action.Type.EXIT, visitorName);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
-            this.session.close();
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }

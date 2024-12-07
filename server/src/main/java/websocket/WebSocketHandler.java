@@ -7,6 +7,7 @@ import exception.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import utility.BoardPrinter;
 import websocket.commands.*;
 import websocket.messages.*;
 
@@ -14,7 +15,7 @@ import java.io.IOException;
 
 
 @WebSocket
-public class WebSocketHandler {
+public class  WebSocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
 
@@ -23,38 +24,40 @@ public class WebSocketHandler {
         UserGameCommand com = new Gson().fromJson(message, UserGameCommand.class);
 
         switch (com.getCommandType()) {
-            case CONNECT -> connect(((ConnectCommand) com).getUsername(), session, ((ConnectCommand) com).getGameID());
-            case MAKE_MOVE -> makeMove(((MakeMoveCommand) com).getMove());
-            case LEAVE -> leave(((LeaveCommand) com).getUsername());
-            case RESIGN -> resign(((ResignCommand) com).getUsername());
+            case CONNECT -> connect(((ConnectCommand) com), session);
+            case MAKE_MOVE -> makeMove(((MakeMoveCommand) com));
+            case LEAVE -> leave(((LeaveCommand) com));
+            case RESIGN -> resign(((ResignCommand) com));
         }
     }
 
-    private void connect(String player, Session session, Integer gameID) throws IOException {
-        connections.add(player, session, gameID);
-        var message = String.format("%s joined the game!", player);
+    private void connect(ConnectCommand com, Session session) throws IOException {
+        connections.add(com.getUsername(), session, com.getGameID());
+        var message = String.format("%s joined the game as %s!", com.getUsername(), com.getColor());
+        broadcast(message, com.getUsername(), com.getGameID());
+    }
+
+    private void makeMove(MakeMoveCommand com) throws IOException {
+        var result = BoardPrinter.convertMoveToString(com.getMove());
+        String start = result.getFirst();
+        String end = result.getSecond();
+        var message = String.format("%s moved %s to %s!", com.getUsername(), start, end);
+        broadcast(message, com.getUsername(), com.getGameID());
+    }
+
+    private void leave(LeaveCommand com) throws IOException {
+        connections.remove(com.getUsername());
+        var message = String.format("%s left the game", com.getUsername());
+        broadcast(message, com.getUsername(), com.getGameID());
+    }
+
+    public void resign(ResignCommand com) throws IOException {
+        var message = String.format("%s resigns the match", com.getUsername());
+        broadcast(message, null, com.getGameID());
+    }
+
+    private void broadcast(String message, String player, Integer gameID) throws IOException {
         var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(player, notification, gameID);
-    }
-
-    private void makeMove(String player, Session session, String start, String end, Integer gameID) throws IOException {
-        var message = String.format("%s moved %s to %s!", player, start, end);
-    }
-
-    private void leave(String player) throws IOException {
-        connections.remove(player);
-        var message = String.format("%s left the game", player);
-        var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(player, notification);
-    }
-
-    public void resign(String player) throws DataAccessException {
-        try {
-            var message = String.format("%s resigns the match", player);
-            var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.broadcast("", notification);
-        } catch (Exception ex) {
-            throw new DataAccessException(500, ex.getMessage());
-        }
     }
 }

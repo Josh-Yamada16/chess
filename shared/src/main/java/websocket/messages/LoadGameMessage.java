@@ -7,4 +7,9 @@ public class LoadGameMessage<T> extends ServerMessage{
         super(type);
         this.game = game;
     }
+
+    public T getGame() {
+        return game;
+    }
+
 }
