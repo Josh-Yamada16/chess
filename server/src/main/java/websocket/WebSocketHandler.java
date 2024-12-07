@@ -1,21 +1,19 @@
 
 package websocket;
 
-import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import utility.BoardPrinter;
+import utility.Utility;
 import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
 
-
 @WebSocket
-public class  WebSocketHandler {
+public class WebSocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
 
@@ -35,10 +33,11 @@ public class  WebSocketHandler {
         connections.add(com.getUsername(), session, com.getGameID());
         var message = String.format("%s joined the game as %s!", com.getUsername(), com.getColor());
         broadcast(message, com.getUsername(), com.getGameID());
+//        connections.sendLoadGame(com.getUsername(), )
     }
 
     private void makeMove(MakeMoveCommand com) throws IOException {
-        var result = BoardPrinter.convertMoveToString(com.getMove());
+        var result = Utility.convertMoveToString(com.getMove());
         String start = result.getFirst();
         String end = result.getSecond();
         var message = String.format("%s moved %s to %s!", com.getUsername(), start, end);
@@ -51,7 +50,7 @@ public class  WebSocketHandler {
         broadcast(message, com.getUsername(), com.getGameID());
     }
 
-    public void resign(ResignCommand com) throws IOException {
+    private void resign(ResignCommand com) throws IOException {
         var message = String.format("%s resigns the match", com.getUsername());
         broadcast(message, null, com.getGameID());
     }

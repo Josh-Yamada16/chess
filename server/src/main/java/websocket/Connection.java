@@ -22,4 +22,8 @@ public class Connection {
     public Integer getGameID() {
         return gameID;
     }
+
+    public Session getSession() {
+        return session;
+    }
 }

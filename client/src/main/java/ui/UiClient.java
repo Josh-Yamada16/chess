@@ -9,7 +9,7 @@ import model.AuthData;
 import model.UserData;
 import requests.JoinGameRequest;
 import server.ServerFacade;
-import utility.BoardPrinter;
+import utility.Utility;
 import websocket.*;
 
 import javax.websocket.*;
@@ -292,8 +292,8 @@ public class UiClient {
             if (params.length == 2) {
                 // need to parse the numbers and letters to convert them to coordinates
                 assertInGame();
-                var result = BoardPrinter.validateAndParseCoordinates(params[0]);
-                var result1 = BoardPrinter.validateAndParseCoordinates(params[1]);
+                var result = Utility.validateAndParseCoordinates(params[0]);
+                var result1 = Utility.validateAndParseCoordinates(params[1]);
                 ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
                 ChessPosition end = new ChessPosition(result1.getFirst(), result1.getSecond());
                 // make a route where the pawn is going to be promoted
@@ -334,6 +334,10 @@ public class UiClient {
             return SET_TEXT_COLOR_RED + "** Expected: <piece position>**\n";
         }
         return "";
+    }
+
+    public void updateActiveGame(ChessGame game){
+        activeGame = game;
     }
 
     private void assertLoggedIn() throws DataAccessException {

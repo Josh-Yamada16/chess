@@ -68,7 +68,6 @@ public class Server {
         res.status(ex.statusCode());
     }
 
-
     // added exception handling for the register endpoint
     private Object registerUser(Request req, Response res) {
         try {

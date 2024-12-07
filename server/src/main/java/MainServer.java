@@ -1,6 +1,6 @@
 import server.Server;
 
-public class Main {
+public class MainServer {
 
     /**
      * Starts the server on the given port. If port is 0 then a random port is used.

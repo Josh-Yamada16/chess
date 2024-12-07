@@ -39,6 +39,10 @@ public class ServerFacade {
         });
     }
 
+    public ServerFacade(String url) {
+        serverUrl = url;
+    }
+
     public AuthData registerUser(UserData user) throws DataAccessException {
         var path = "/user";
         return this.makeRequest("POST", path, user, AuthData.class, null);
@@ -200,21 +204,21 @@ public class ServerFacade {
         }
     }
 
-    public void inCheck(String visitorName) throws DataAccessException {
-        try {
-            var action = new Action(Action.Type.EXIT, visitorName);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new DataAccessException(500, ex.getMessage());
-        }
-    }
-
-    public void inCheckmate(String visitorName) throws DataAccessException {
-        try {
-            var action = new Action(Action.Type.EXIT, visitorName);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new DataAccessException(500, ex.getMessage());
-        }
-    }
+//    public void inCheck(String visitorName) throws DataAccessException {
+//        try {
+//            var action = new Action(Action.Type.EXIT, visitorName);
+//            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+//        } catch (IOException ex) {
+//            throw new DataAccessException(500, ex.getMessage());
+//        }
+//    }
+//
+//    public void inCheckmate(String visitorName) throws DataAccessException {
+//        try {
+//            var action = new Action(Action.Type.EXIT, visitorName);
+//            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+//        } catch (IOException ex) {
+//            throw new DataAccessException(500, ex.getMessage());
+//        }
+//    }
 }

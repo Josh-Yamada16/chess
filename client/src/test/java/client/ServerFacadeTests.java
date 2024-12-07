@@ -10,6 +10,9 @@ import requests.JoinGameRequest;
 import server.Server;
 import server.ServerFacade;
 
+import javax.websocket.DeploymentException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;

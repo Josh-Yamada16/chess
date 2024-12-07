@@ -54,12 +54,15 @@ public class UiRepl implements NotificationHandler{
     public void notify(ServerMessage message) {
         switch (message.getServerMessageType()){
             case NOTIFICATION, ERROR -> System.out.println(message.getMessage());
-            case LOAD_GAME -> loadGame((LoadGameMessage) message).getGame();
+            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
         }
     }
 
-    public void loadGame(ChessGame game){
-
+    public <T> void loadGame(T game){
+        if (game != null){
+            ChessGame chessGame = (ChessGame) game;
+            uiClient.updateActiveGame(chessGame);
+        }
     }
 
     interface FuncInter{
