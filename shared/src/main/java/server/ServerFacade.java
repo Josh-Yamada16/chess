@@ -5,8 +5,13 @@ import com.google.gson.Gson;
 import exception.DataAccessException;
 import model.*;
 import requests.JoinGameRequest;
+import websocket.NotificationHandler;
 import websocket.commands.*;
+import websocket.messages.NotificationMessage;
 
+import javax.websocket.ContainerProvider;
+import javax.websocket.DeploymentException;
+import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 import java.io.*;
 import java.net.*;
@@ -16,10 +21,22 @@ public class ServerFacade {
 
     private final String serverUrl;
     private Session session;
+    private NotificationHandler notificationHandler;
 
-    public ServerFacade(String url, Session session) {
+
+    public ServerFacade(String url, NotificationHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
         serverUrl = url;
-        this.session = session;
+        this.notificationHandler = notificationHandler;
+        URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
+        this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
+
+        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            @Override
+            public void onMessage(String message) {
+                NotificationMessage notMessage = new Gson().fromJson(message, NotificationMessage.class);
+                notificationHandler.notify(notMessage);
+            }
+        });
     }
 
     public AuthData registerUser(UserData user) throws DataAccessException {
@@ -70,7 +87,7 @@ public class ServerFacade {
         }
     }
 
-    public boolean joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
+    public boolean joinGame(JoinGameRequest request, String authToken) {
         try{
             var path = "/game";
             this.makeRequest("PUT", path, request, null, authToken);
@@ -139,7 +156,7 @@ public class ServerFacade {
     // Websocket methods
     public void connect(String player, JoinGameRequest.PlayerColor team, Integer gameID, String authToken) throws DataAccessException {
         try {
-            var connect = new ConnectCommand(UserGameCommand.CommandType.CONNECT,authToken, gameID, player);
+            var connect = new ConnectCommand(UserGameCommand.CommandType.CONNECT,authToken, gameID, player, team);
             this.session.getBasicRemote().sendText(new Gson().toJson(connect));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
@@ -148,16 +165,16 @@ public class ServerFacade {
 
     public void connectObserver(String player, Integer gameID, String authToken) throws DataAccessException {
         try {
-            var action = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, player);
+            var action = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, player, null);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
 
-    public void makeMove(Integer gameID, String authToken, ChessMove move) throws DataAccessException {
+    public void makeMove(Integer gameID, String authToken, ChessMove move, String username) throws DataAccessException {
         try {
-            var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
+            var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move, String username);
             this.session.getBasicRemote().sendText(new Gson().toJson(make));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());

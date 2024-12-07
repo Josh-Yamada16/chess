@@ -1,9 +1,7 @@
 package ui;
 
 import websocket.NotificationHandler;
-import websocket.WebSocketHandler;
 import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
 
 import javax.websocket.DeploymentException;
 import java.io.IOException;
@@ -12,11 +10,11 @@ import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class UiRepl {
+public class UiRepl implements NotificationHandler{
     private UiClient uiClient;
 
     public UiRepl(String serverUrl) throws DeploymentException, URISyntaxException, IOException {
-        uiClient = new UiClient(serverUrl, new WebSocketHandler());
+        uiClient = new UiClient(serverUrl, this);
     }
 
     public void run() {
@@ -49,6 +47,11 @@ public class UiRepl {
             }
         }
         System.out.println();
+    }
+
+    @Override
+    public void notify(NotificationMessage message) {
+        System.out.println(message.getMessage());
     }
 
     interface FuncInter{

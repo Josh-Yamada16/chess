@@ -9,13 +9,11 @@ import model.AuthData;
 import model.UserData;
 import requests.JoinGameRequest;
 import server.ServerFacade;
+import utility.BoardPrinter;
 import websocket.*;
 
-import javax.websocket.ContainerProvider;
-import javax.websocket.DeploymentException;
-import javax.websocket.Session;
+import javax.websocket.*;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
@@ -27,17 +25,12 @@ public class UiClient {
     private final ServerFacade server;
     public State state = State.PRESIGNIN;
     private final String serverUrl;
-    private final WebSocketHandler notificationHandler;
-    private Session session;
     private ChessGame activeGame;
     private JoinGameRequest.PlayerColor playerColor;
 
-    public UiClient(String serverUrl, WebSocketHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
+    public UiClient(String serverUrl, NotificationHandler notificationHandler) throws DeploymentException, URISyntaxException, IOException {
         this.serverUrl = serverUrl;
-        this.notificationHandler = notificationHandler;
-        URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
-        this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
-        server = new ServerFacade(serverUrl, session);
+        server = new ServerFacade(serverUrl, notificationHandler);
     }
 
     public String eval(String input) {
@@ -96,9 +89,9 @@ public class UiClient {
             return """
                     - 'redraw' chess board
                     - 'leave'
-                    - 'move' <piece position> <end position>
+                    - 'move' <piece position(A-G/1-8)> <end position(A-G/1-8)>
                     - 'resign'
-                    - 'highlight' legal moves <piece position>
+                    - 'highlight' legal moves <piece position(A-G/1-8)>
                     - 'help'
                     """;
         }
@@ -283,7 +276,7 @@ public class UiClient {
             assertInGame();
             if (params.length == 0) {
                 server.leaveGame(this.username, 0, this.authToken);
-                // remember to set activeGame to null and playercolor
+                // remember to set activeGame to null and playercolor and session
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST LEAVE*\n";
         } catch (DataAccessException ex) {
@@ -304,11 +297,16 @@ public class UiClient {
                 ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
                 ChessPosition end = new ChessPosition(result1.getFirst(), result1.getSecond());
                 // make a route where the pawn is going to be promoted
-                ChessMove thingy = new ChessMove(start, end, null);
-                activeGame.makeMove(thingy);
+                ChessMove move = new ChessMove(start, end, null);
+                activeGame.makeMove(move);
+                server.makeMove(0, authToken, move, username);
+                BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard());
+                return "";
             }
-            return SET_TEXT_COLOR_RED + "**Expected: <start position(A-G/1-8)> <end position(A-G/1-8)>**\n";
-        } catch (DataAccessException|InvalidMoveException e) {
+            else{
+                return SET_TEXT_COLOR_RED + "**Expected: <start position(A-G/1-8)> <end position(A-G/1-8)>**\n";
+            }
+        } catch (DataAccessException | InvalidMoveException | RuntimeException | IOException e) {
             return SET_TEXT_COLOR_RED + e.getMessage();
         }
     }

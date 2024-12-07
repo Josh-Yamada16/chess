@@ -23,22 +23,22 @@ public class WebSocketHandler {
         UserGameCommand com = new Gson().fromJson(message, UserGameCommand.class);
 
         switch (com.getCommandType()) {
-            case CONNECT -> connect(((ConnectCommand) com).getUsername(), session);
+            case CONNECT -> connect(((ConnectCommand) com).getUsername(), session, ((ConnectCommand) com).getGameID());
             case MAKE_MOVE -> makeMove(((MakeMoveCommand) com).getMove());
             case LEAVE -> leave(((LeaveCommand) com).getUsername());
             case RESIGN -> resign(((ResignCommand) com).getUsername());
         }
     }
 
-    private void connect(String player, Session session) throws IOException {
-        connections.add(player, session);
+    private void connect(String player, Session session, Integer gameID) throws IOException {
+        connections.add(player, session, gameID);
         var message = String.format("%s joined the game!", player);
         var notification = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(player, notification);
+        connections.broadcast(player, notification, gameID);
     }
 
-    private void makeMove(ChessMove move) throws IOException {
-
+    private void makeMove(String player, Session session, String start, String end, Integer gameID) throws IOException {
+        var message = String.format("%s moved %s to %s!", player, start, end);
     }
 
     private void leave(String player) throws IOException {

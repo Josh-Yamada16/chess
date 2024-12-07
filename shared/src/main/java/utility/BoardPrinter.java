@@ -1,4 +1,4 @@
-package ui;
+package utility;
 
 import chess.ChessBoard;
 import chess.ChessGame;
@@ -6,11 +6,11 @@ import chess.ChessPosition;
 import exception.DataAccessException;
 import org.glassfish.grizzly.utils.Pair;
 import requests.JoinGameRequest;
+import ui.EscapeSequences;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
-import static ui.EscapeSequences.*;
 
 public class BoardPrinter {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
@@ -64,7 +64,7 @@ public class BoardPrinter {
     }
 
     private static void printHeaderText(PrintStream out, String text) {
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(EscapeSequences.SET_TEXT_COLOR_BLACK);
         out.print(text);
     }
 
@@ -96,11 +96,11 @@ public class BoardPrinter {
                 // print based on what is next on the chessboard
                 if (board.getPiece(new ChessPosition(8-squareRow, 1+boardCol)) != null){
                     if (board.getPiece(new ChessPosition(8-squareRow, 1+boardCol)).getTeamColor() == ChessGame.TeamColor.WHITE){
-                        out.print(SET_TEXT_COLOR_RED);
+                        out.print(EscapeSequences.SET_TEXT_COLOR_RED);
                         out.print(pieceChar(board, 8-squareRow, 1+boardCol));
                     }
                     else{
-                        out.print(SET_TEXT_COLOR_BLUE);
+                        out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
                         out.print(pieceChar(board, 8-squareRow, 1+boardCol));
                     }
                 }
@@ -130,18 +130,18 @@ public class BoardPrinter {
     }
 
     private static void setWhite(PrintStream out) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_BLUE);
+        out.print(EscapeSequences.SET_BG_COLOR_WHITE);
+        out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
     }
 
     private static void setBlack(PrintStream out) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(EscapeSequences.SET_BG_COLOR_BLACK);
+        out.print(EscapeSequences.SET_TEXT_COLOR_BLACK);
     }
 
     private static void setLightGrey(PrintStream out) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
-        out.print(SET_TEXT_COLOR_LIGHT_GREY);
+        out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
+        out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
     }
 
     public static Pair<Integer, Integer> validateAndParseCoordinates(String coordinates) throws DataAccessException{
@@ -163,4 +163,6 @@ public class BoardPrinter {
             throw new DataAccessException(500, "**Expected: A-G/1-8**");
         }
     }
+
+    public static
 }
