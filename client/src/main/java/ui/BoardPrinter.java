@@ -2,14 +2,12 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame;
-import chess.ChessMove;
 import chess.ChessPosition;
-import exception.DataAccessException;
-import org.glassfish.grizzly.utils.Pair;
 import requests.JoinGameRequest;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 
 public class BoardPrinter {
@@ -18,26 +16,26 @@ public class BoardPrinter {
 
     public BoardPrinter(){}
 
-    public static void printBasedOnPov(JoinGameRequest.PlayerColor color, ChessBoard board){
+    public static void printBasedOnPov(JoinGameRequest.PlayerColor color, ChessBoard board, ArrayList<ChessPosition> moves){
         switch(color){
-            case WHITE -> printWhitePov(board);
-            case BLACK -> printBlackPov(board);
+            case WHITE -> printWhitePov(board, moves);
+            case BLACK -> printBlackPov(board, moves);
         }
     }
 
-    public static void printWhitePov(ChessBoard board) {
+    public static void printWhitePov(ChessBoard board, ArrayList<ChessPosition> moves) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         String[] headers = { "a", "b", "c", "d", "e", "f", "g", "h" };
         drawHeaders(out, headers);
-        drawChessBoard(out, board, true, 0);
+        drawChessBoard(out, board, true, 0, moves);
         drawHeaders(out, headers);
     }
 
-    public static void printBlackPov(ChessBoard board) {
+    public static void printBlackPov(ChessBoard board, ArrayList<ChessPosition> moves) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         String[] headers = { "h", "g", "f", "e", "d", "c", "b", "a" };
         drawHeaders(out, headers);
-        drawChessBoard(out, board, false, 7);
+        drawChessBoard(out, board, false, 7, moves);
         drawHeaders(out, headers);
     }
 
@@ -68,48 +66,38 @@ public class BoardPrinter {
         out.print(text);
     }
 
-    private static void drawChessBoard(PrintStream out, ChessBoard board, boolean increment, int start) {
-        interface FuncInter{
-            void execute();
-        }
+    private static void drawChessBoard(PrintStream out, ChessBoard board, boolean increment, int start, ArrayList<ChessPosition> highlights) {
         for (int squareRow = start; (increment ? squareRow < BOARD_SIZE_IN_SQUARES : squareRow >= 0);
              squareRow += (increment ? 1 : -1)) {
             printStart(out, 8 - squareRow);
             for (int boardCol = start; (increment ? boardCol < BOARD_SIZE_IN_SQUARES : boardCol >= 0);
                  boardCol += (increment ? 1 : -1)) {
-                // set white or black beforehand
-                FuncInter func;
-                if (squareRow % 2 == 0 & boardCol % 2 == 0){
-                    func = () -> setWhite(out);
+                ChessPosition currentPosition = new ChessPosition(8 - squareRow, 1 + boardCol);
+                boolean isHighlighted = highlights.contains(currentPosition);
+
+                if (isHighlighted) {
+                    setHighlight(out, (squareRow + boardCol) % 2 == 0);
+                } else {
+                    setSquareColor(out, (squareRow + boardCol) % 2 == 0);
                 }
-                else if (squareRow % 2 == 0 & boardCol % 2 == 1){
-                    func = () -> setBlack(out);
-                }
-                else if (squareRow % 2 == 1 & boardCol % 2 == 0){
-                    func = () -> setBlack(out);
-                }
-                else{
-                    func = () -> setWhite(out);
-                }
-                func.execute();
+
                 out.print(EMPTY);
-                // print based on what is next on the chessboard
-                if (board.getPiece(new ChessPosition(8-squareRow, 1+boardCol)) != null){
-                    if (board.getPiece(new ChessPosition(8-squareRow, 1+boardCol)).getTeamColor() == ChessGame.TeamColor.WHITE){
-                        out.print(EscapeSequences.SET_TEXT_COLOR_RED);
-                        out.print(pieceChar(board, 8-squareRow, 1+boardCol));
-                    }
-                    else{
-                        out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
-                        out.print(pieceChar(board, 8-squareRow, 1+boardCol));
-                    }
+                if (board.getPiece(currentPosition) != null) {
+                    var piece = board.getPiece(currentPosition);
+                    out.print(piece.getTeamColor() == ChessGame.TeamColor.WHITE
+                            ? EscapeSequences.SET_TEXT_COLOR_RED
+                            : EscapeSequences.SET_TEXT_COLOR_BLUE);
+                    out.print(pieceChar(board, 8 - squareRow, 1 + boardCol));
+                } else {
+                    out.print(EMPTY);
                 }
-                else{
-                    out.print(" ");
+
+                if (isHighlighted) {
+                    setGreen(out);
+                } else {
+                    setSquareColor(out, (squareRow + boardCol) % 2 == 0);
                 }
-                func.execute();
                 out.print(EMPTY);
-                setLightGrey(out);
             }
             printStart(out, 8 - squareRow);
             setBlack(out);
@@ -125,8 +113,24 @@ public class BoardPrinter {
             case ROOK -> "R";
             case QUEEN -> "Q";
             case KING -> "K";
-            default -> "";
         };
+    }
+
+    private static void setSquareColor(PrintStream out, boolean isWhite) {
+        if (isWhite) {
+            setWhite(out);
+        } else {
+            setBlack(out);
+        }
+    }
+
+    private static void setHighlight(PrintStream out, boolean isWhite){
+        if (isWhite){
+            setGreen(out);
+        }
+        else{
+            setDarkGreen(out);
+        }
     }
 
     private static void setWhite(PrintStream out) {
@@ -142,5 +146,13 @@ public class BoardPrinter {
     private static void setLightGrey(PrintStream out) {
         out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
         out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+    }
+
+    private static void setDarkGreen(PrintStream out) {
+        out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
+    }
+
+    private static void setGreen(PrintStream out) {
+        out.print(EscapeSequences.SET_BG_COLOR_GREEN);
     }
 }

@@ -15,6 +15,7 @@ import websocket.*;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -216,7 +217,7 @@ public class UiClient {
                     activeGame = games.get(num).game();
                     playerColor = color;
                     server.connect(username, color, games.get(num).gameID(), authToken);
-                    BoardPrinter.printBasedOnPov(color, games.get(num).game().getBoard());
+                    BoardPrinter.printBasedOnPov(color, games.get(num).game().getBoard(), new ArrayList<ChessPosition>());
                 }
                 else{
                     return SET_TEXT_COLOR_RED + "**Team Already Taken**\n";
@@ -244,7 +245,7 @@ public class UiClient {
             if (num > -1 & num <= games.size() - 1) {
                 System.out.printf("**Currently Observing game %d**\n", num + 1);
                 server.connectObserver(username, games.get(num).gameID(), authToken);
-                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
+                BoardPrinter.printWhitePov(games.get(num).game().getBoard(), new ArrayList<ChessPosition>());
             } else {
                 return SET_TEXT_COLOR_RED + "**Game not available**\n";
             }
@@ -260,7 +261,7 @@ public class UiClient {
         try {
             assertInGame();
             if (params.length == 0) {
-                BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard());
+                BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
         } catch (DataAccessException ex) {
@@ -300,7 +301,7 @@ public class UiClient {
                 ChessMove move = new ChessMove(start, end, null);
                 activeGame.makeMove(move);
                 server.makeMove(0, authToken, move, username);
-                BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard());
+                BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
                 return "";
             }
             else{
@@ -328,6 +329,7 @@ public class UiClient {
         if (params.length == 0) {
             assertInGame();
             // print the board again based on the POV and the available piece moves
+            BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
 //                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
         }
         else{
