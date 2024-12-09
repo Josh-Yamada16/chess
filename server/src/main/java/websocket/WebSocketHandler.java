@@ -2,6 +2,7 @@
 package websocket;
 
 import com.google.gson.Gson;
+import dataaccess.interfaces.GameDAO;
 import exception.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -22,10 +23,10 @@ public class WebSocketHandler {
         UserGameCommand com = new Gson().fromJson(message, UserGameCommand.class);
 
         switch (com.getCommandType()) {
-            case CONNECT -> connect(((ConnectCommand) com), session);
-            case MAKE_MOVE -> makeMove(((MakeMoveCommand) com));
-            case LEAVE -> leave(((LeaveCommand) com));
-            case RESIGN -> resign(((ResignCommand) com));
+            case CONNECT -> connect(new Gson().fromJson(message, ConnectCommand.class), session);
+            case MAKE_MOVE -> makeMove(new Gson().fromJson(message, MakeMoveCommand.class));
+            case LEAVE -> leave(new Gson().fromJson(message, LeaveCommand.class));
+            case RESIGN -> resign(new Gson().fromJson(message, ResignCommand.class));
         }
     }
 
@@ -33,7 +34,7 @@ public class WebSocketHandler {
         connections.add(com.getUsername(), session, com.getGameID());
         var message = String.format("%s joined the game as %s!", com.getUsername(), com.getColor());
         broadcast(message, com.getUsername(), com.getGameID());
-//        connections.sendLoadGame(com.getUsername(), )
+        connections.sendLoadGame(com.getUsername(), );
     }
 
     private void makeMove(MakeMoveCommand com) throws IOException {

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
@@ -300,7 +301,7 @@ public class UiClient {
                 // make a route where the pawn is going to be promoted
                 ChessMove move = new ChessMove(start, end, null);
                 activeGame.makeMove(move);
-                server.makeMove(0, authToken, move, username);
+                server.makeMove(0, authToken, activeGame, username);
                 BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
                 return "";
             }
@@ -326,9 +327,12 @@ public class UiClient {
     }
 
     public String highlight(String... params) throws DataAccessException {
-        if (params.length == 0) {
+        if (params.length == 1) {
             assertInGame();
+            var result = Utility.validateAndParseCoordinates(params[0]);
+            ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
             // print the board again based on the POV and the available piece moves
+            Collection<ChessMove> moves = activeGame.validMoves(start);
             BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
 //                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
         }

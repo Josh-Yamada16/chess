@@ -2,6 +2,7 @@ package dataaccess.implementations;
 
 import chess.ChessGame;
 import dataaccess.interfaces.GameDAO;
+import exception.DataAccessException;
 import model.GameData;
 import requests.JoinGameRequest;
 
@@ -62,5 +63,10 @@ public class MemoryGameDAO implements GameDAO {
 
     public ArrayList<Integer> onlyGames() {
         return new ArrayList<>(games.keySet());
+    }
+
+    @Override
+    public boolean updateGame(int gameID, ChessGame game) throws DataAccessException {
+        return false;
     }
 }

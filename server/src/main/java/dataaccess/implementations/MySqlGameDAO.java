@@ -8,6 +8,7 @@ import exception.DataAccessException;
 import model.GameData;
 import requests.JoinGameRequest;
 
+import javax.xml.crypto.Data;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -128,6 +129,18 @@ public class MySqlGameDAO implements GameDAO {
             executeUpdate(statement, game.whiteUsername(), userName, game.gameName(), gamejson, gameID);
         }
         return true;
+    }
+
+    //TODO add new method to update the game based on the gameid
+    public boolean updateGame(int gameID, ChessGame newGame) throws DataAccessException {
+        try{
+            var statement = "UPDATE games SET chessgame=? WHERE gameid=?";
+            var gamejson = new Gson().toJson(newGame);
+            executeUpdate(statement, gamejson, gameID);
+            return true;
+        } catch (DataAccessException ex) {
+            return false;
+        }
     }
 
     // The common method that actually implements the statement for the sql

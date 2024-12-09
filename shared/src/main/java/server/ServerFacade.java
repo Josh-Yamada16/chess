@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.DataAccessException;
@@ -101,6 +102,17 @@ public class ServerFacade {
         }
     }
 
+    public boolean updateGame(int gameID, ChessGame chessGame){
+        try{
+            var path = "/update";
+            GameData game = new GameData(gameID, null, null, null, chessGame);
+            this.makeRequest("PUT", path, game, null, null);
+            return true;
+        } catch (DataAccessException e) {
+            return false;
+        }
+    }
+
     public void clear() throws DataAccessException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, null, null);
@@ -176,10 +188,11 @@ public class ServerFacade {
         }
     }
 
-    public void makeMove(Integer gameID, String authToken, ChessMove move, String username) throws DataAccessException {
+    public void makeMove(Integer gameID, String authToken, ChessGame game, String username) throws DataAccessException {
         try {
             var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move, username);
             this.session.getBasicRemote().sendText(new Gson().toJson(make));
+            this.updateGame(gameID, game);
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
@@ -203,22 +216,4 @@ public class ServerFacade {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
-
-//    public void inCheck(String visitorName) throws DataAccessException {
-//        try {
-//            var action = new Action(Action.Type.EXIT, visitorName);
-//            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-//        } catch (IOException ex) {
-//            throw new DataAccessException(500, ex.getMessage());
-//        }
-//    }
-//
-//    public void inCheckmate(String visitorName) throws DataAccessException {
-//        try {
-//            var action = new Action(Action.Type.EXIT, visitorName);
-//            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-//        } catch (IOException ex) {
-//            throw new DataAccessException(500, ex.getMessage());
-//        }
-//    }
 }

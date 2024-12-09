@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import exception.DataAccessException;
@@ -55,6 +56,10 @@ public class GameService {
             throw new DataAccessException(401, "Error: unauthorized");
         }
         return gameDao.listGames();
+    }
+
+    public boolean updateGame(int gameID, ChessGame game) throws DataAccessException{
+        return gameDao.updateGame(gameID, game);
     }
 
     public void clear() throws DataAccessException {

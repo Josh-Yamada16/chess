@@ -38,7 +38,6 @@ public class Server {
         Spark.port(port);
 
         Spark.staticFiles.location("web");
-        Spark.init();
 
         Spark.webSocket("/ws", WebSocketHandler.class);
 
@@ -48,6 +47,7 @@ public class Server {
         Spark.get("/game", this::listGames); // List Games
         Spark.post("/game", this::createGame); // Create Game
         Spark.put("/game", this::joinGame); // Join Game
+        Spark.put("/update", this::update);
         Spark.delete("/db", this::clear); // Clear Application
         Spark.exception(DataAccessException.class, this::exceptionHandler);
 
@@ -137,6 +137,15 @@ public class Server {
         } catch (DataAccessException ex){
             res.status(ex.statusCode());
             return new Gson().toJson(Map.of("message", ex.getMessage()));
+        }
+    }
+
+    private void update(Request req, Response res){
+        try{
+            var game = new Gson().fromJson(req.body(), GameData.class);
+            gameService.updateGame(game.gameID(), game.game());
+        } catch (DataAccessException e) {
+            return null;
         }
     }
 

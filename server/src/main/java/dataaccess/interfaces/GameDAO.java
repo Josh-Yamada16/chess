@@ -1,5 +1,6 @@
 package dataaccess.interfaces;
 
+import chess.ChessGame;
 import exception.DataAccessException;
 import model.GameData;
 import requests.JoinGameRequest;
@@ -19,4 +20,6 @@ public interface GameDAO {
     Collection<GameData> listGames() throws DataAccessException;
 
     ArrayList<Integer> onlyGames() throws DataAccessException;
+
+    boolean updateGame(int gameID, ChessGame game) throws DataAccessException;
 }
