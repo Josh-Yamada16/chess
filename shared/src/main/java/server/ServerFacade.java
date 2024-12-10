@@ -89,12 +89,12 @@ public class ServerFacade {
 
             URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
             this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
+            this.session.setMaxIdleTimeout(300000);
 
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    NotificationMessage notMessage = new Gson().fromJson(message, NotificationMessage.class);
-                    notificationHandler.notify(notMessage);
+                    notificationHandler.notify(message);
                 }
             });
 

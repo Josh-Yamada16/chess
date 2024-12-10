@@ -35,37 +35,54 @@ public class WebSocketHandler {
     }
 
     private void connect(ConnectCommand com, Session session) throws IOException, DataAccessException {
-        connections.add(authDAO.getAuth(com.getAuthToken()).username(), session, com.getGameID());
-        JoinGameRequest.PlayerColor team = gameDAO.getTeamColor(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
-        String message;
-        if (team != null) {
-            message = String.format("%s joined the game as %s!", authDAO.getAuth(com.getAuthToken()).username(), team.name());
+        try{
+            connections.add(authDAO.getAuth(com.getAuthToken()).username(), session, com.getGameID());
+            JoinGameRequest.PlayerColor team = gameDAO.getTeamColor(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
+            String message;
+            if (team != null) {
+                message = String.format("%s joined the game as %s!", authDAO.getAuth(com.getAuthToken()).username(), team.name());
+            }
+            else{
+                message = String.format("%s joined as an observer!", authDAO.getAuth(com.getAuthToken()).username());
+            }
+            broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+            connections.sendLoadGame(authDAO.getAuth(com.getAuthToken()).username(),
+                    new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameDAO.getGame(com.getGameID())));
+        } catch (DataAccessException | IOException ex){
+            connections.sendLoadGame(authDAO.getAuth(com.getAuthToken()).username(),
+                    new ErrorMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
         }
-        else{
-            message = String.format("%s joined as an observer!", authDAO.getAuth(com.getAuthToken()).username());
-        }
-        broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
-        connections.sendLoadGame(authDAO.getAuth(com.getAuthToken()).username(),
-                new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameDAO.getGame(com.getGameID())));
     }
 
     private void makeMove(MakeMoveCommand com) throws IOException, DataAccessException {
-        var result = Utility.convertMoveToString(com.getMove());
-        String start = result.getFirst();
-        String end = result.getSecond();
-        var message = String.format("%s moved %s to %s!", authDAO.getAuth(com.getAuthToken()).username(), start, end);
-        broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        try{
+            var result = Utility.convertMoveToString(com.getMove());
+            String start = result.getFirst();
+            String end = result.getSecond();
+            var message = String.format("%s moved %s to %s!", authDAO.getAuth(com.getAuthToken()).username(), start, end);
+            broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        } catch (DataAccessException | IOException ex) {
+            broadcast(ex.getMessage(), authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        }
     }
 
     private void leave(LeaveCommand com) throws IOException, DataAccessException {
-        connections.remove(authDAO.getAuth(com.getAuthToken()).username());
-        var message = String.format("%s left the game", authDAO.getAuth(com.getAuthToken()).username());
-        broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        try{
+            connections.remove(authDAO.getAuth(com.getAuthToken()).username());
+            var message = String.format("%s left the game", authDAO.getAuth(com.getAuthToken()).username());
+            broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        } catch (DataAccessException | IOException ex) {
+            broadcast(ex.getMessage(), authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        }
     }
 
     private void resign(ResignCommand com) throws IOException, DataAccessException {
-        var message = String.format("%s resigns the match", authDAO.getAuth(com.getAuthToken()).username());
-        broadcast(message, null, com.getGameID());
+        try{
+            var message = String.format("%s resigns the match", authDAO.getAuth(com.getAuthToken()).username());
+            broadcast(message, null, com.getGameID());
+        } catch (DataAccessException | IOException ex) {
+            broadcast(ex.getMessage(), authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        }
     }
 
     private void broadcast(String message, String player, Integer gameID) throws IOException {
