@@ -89,7 +89,6 @@ public class ServerFacade {
 
             URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
             this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
-            this.session.setMaxIdleTimeout(300000);
 
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
@@ -109,7 +108,8 @@ public class ServerFacade {
             var path = "/update";
             GameData game = new GameData(gameID, null, null, null, chessGame);
             this.makeRequest("PUT", path, game, null, null);
-        } catch (DataAccessException ignored) {
+        } catch (DataAccessException ex) {
+
         }
     }
 

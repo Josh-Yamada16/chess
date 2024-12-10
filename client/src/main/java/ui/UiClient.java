@@ -26,13 +26,11 @@ public class UiClient {
     private String authToken = null;
     private final ServerFacade server;
     public State state = State.PRESIGNIN;
-    private final String serverUrl;
     private ChessGame activeGame;
     private Integer activeGameId;
     private JoinGameRequest.PlayerColor playerColor;
 
     public UiClient(String serverUrl, NotificationHandler notificationHandler) throws DeploymentException, URISyntaxException, IOException {
-        this.serverUrl = serverUrl;
         server = new ServerFacade(serverUrl, notificationHandler);
     }
 
@@ -217,7 +215,7 @@ public class UiClient {
         } catch (NumberFormatException ex){
             return SET_TEXT_COLOR_RED + "**Expected: Game Number**\n";
         }
-        if (num <= -1 || num > games.size()-1) {
+        if (num <= -1 || num > games.size()) {
             return SET_TEXT_COLOR_RED + "**Game not available**\n";
         }
         JoinGameRequest req = new JoinGameRequest(color, games.get(num).gameID());

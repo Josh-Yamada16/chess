@@ -142,7 +142,6 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
-    //TODO add new method to update the game based on the gameid
     public ChessGame updateGame(int gameID, ChessGame newGame) throws DataAccessException {
         try{
             var statement = "UPDATE games SET chessgame=? WHERE gameid=?";
@@ -155,6 +154,10 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     public JoinGameRequest.PlayerColor getTeamColor(int gameID, String username) throws DataAccessException {
+        GameData game = this.getGame(gameID);
+        if (game == null){
+            throw new DataAccessException(403, "Error: Game not found");
+        }
         if (getGame(gameID).blackUsername().equals(username)){
             return JoinGameRequest.PlayerColor.BLACK;
         }

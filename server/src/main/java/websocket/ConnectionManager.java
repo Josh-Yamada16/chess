@@ -2,39 +2,75 @@ package websocket;
 
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
+import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, List<Connection>> map = new ConcurrentHashMap<>();
 
     public void add(String player, Session session, Integer gameID) {
-        var connection = new Connection(player, session, gameID);
-        connections.put(player, connection);
+        map.computeIfAbsent(gameID, k -> Collections.synchronizedList(new ArrayList<>())).add(new Connection(player, session));
     }
 
-    public void remove(String player) {
-        connections.remove(player);
+    public List<Connection> getValues(Integer key) {
+        return map.getOrDefault(key, Collections.emptyList());
     }
 
-    public void broadcast(String excludePlayer, ServerMessage notification, Integer gameID) throws IOException {
-        for (var c : connections.values()) {
-            if (c.session != null && c.session.isOpen()) {
-                if (!c.playerName.equals(excludePlayer) && connections.get(excludePlayer).getGameID() == gameID) {
-                    c.send(new Gson().toJson(notification));
+    public void remove(String player, Integer gameID) {
+        List<Connection> connections = map.get(gameID);
+        if (connections != null) {
+            synchronized (connections) {
+                connections.removeIf(connection -> connection.playerName.equals(player));
+                if (connections.isEmpty()) {
+                    map.remove(gameID);
                 }
             }
         }
     }
 
-    public void sendLoadGame(String player, ServerMessage message) throws IOException {
-        var connection = connections.get(player);
-        boolean yes = connection.getSession().isOpen();
-        if (connection != null && yes) {
-            String messageJson = new Gson().toJson(message);
-            connection.getSession().getRemote().sendString(messageJson);
+    public Session getSessionByPlayer(String playerName) {
+        for (List<Connection> connections : map.values()) {
+            synchronized (connections) {
+                for (Connection connection : connections) {
+                    if (connection.playerName.equals(playerName)) {
+                        return connection.session;
+                    }
+                }
+            }
         }
+        return null;
+    }
+
+    public void broadcast(String excludePlayer, ServerMessage notification, Integer gameID) throws IOException {
+        List<Connection> connections = this.getValues(gameID);
+        for (Connection connection : connections) {
+            if (connection.session != null && connection.session.isOpen()
+                    && !connection.playerName.equals(excludePlayer)) {
+                connection.send(new Gson().toJson(notification));
+            }
+        }
+    }
+
+    public <T> void sendLoadGame(String player, ServerMessage.ServerMessageType type, T mess) throws IOException {
+        Session session = getSessionByPlayer(player);
+        if (session == null){
+            return;
+        }
+        if (!session.isOpen()){
+            return;
+        }
+        var messageJson = switch (type) {
+            case LOAD_GAME -> new Gson().toJson(new LoadGameMessage(type, mess));
+            case ERROR -> new Gson().toJson(new ErrorMessage(type, (String) mess));
+            default -> throw new IllegalArgumentException("Unsupported message type: " + type);
+        };
+        session.getRemote().sendString(messageJson);
     }
 }

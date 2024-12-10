@@ -47,10 +47,10 @@ public class WebSocketHandler {
             }
             broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
             connections.sendLoadGame(authDAO.getAuth(com.getAuthToken()).username(),
-                    new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameDAO.getGame(com.getGameID())));
+                    ServerMessage.ServerMessageType.LOAD_GAME, gameDAO.getGame(com.getGameID()));
         } catch (DataAccessException | IOException ex){
-            connections.sendLoadGame(authDAO.getAuth(com.getAuthToken()).username(),
-                    new ErrorMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+            connections.sendLoadGame(,
+                    ServerMessage.ServerMessageType.ERROR, "ERROR");
         }
     }
 
@@ -68,7 +68,7 @@ public class WebSocketHandler {
 
     private void leave(LeaveCommand com) throws IOException, DataAccessException {
         try{
-            connections.remove(authDAO.getAuth(com.getAuthToken()).username());
+            connections.remove(authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
             var message = String.format("%s left the game", authDAO.getAuth(com.getAuthToken()).username());
             broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
         } catch (DataAccessException | IOException ex) {
