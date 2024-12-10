@@ -28,16 +28,6 @@ public class ServerFacade {
     public ServerFacade(String url, NotificationHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
         serverUrl = url;
         this.notificationHandler = notificationHandler;
-        URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
-        this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
-
-        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-            @Override
-            public void onMessage(String message) {
-                NotificationMessage notMessage = new Gson().fromJson(message, NotificationMessage.class);
-                notificationHandler.notify(notMessage);
-            }
-        });
     }
 
     public ServerFacade(String url) {
@@ -96,20 +86,30 @@ public class ServerFacade {
         try{
             var path = "/game";
             this.makeRequest("PUT", path, request, null, authToken);
+
+            URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
+            this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
+
+            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+                @Override
+                public void onMessage(String message) {
+                    NotificationMessage notMessage = new Gson().fromJson(message, NotificationMessage.class);
+                    notificationHandler.notify(notMessage);
+                }
+            });
+
             return true;
         } catch (Exception e){
             return false;
         }
     }
 
-    public boolean updateGame(int gameID, ChessGame chessGame){
+    public void updateGame(int gameID, ChessGame chessGame){
         try{
             var path = "/update";
             GameData game = new GameData(gameID, null, null, null, chessGame);
             this.makeRequest("PUT", path, game, null, null);
-            return true;
-        } catch (DataAccessException e) {
-            return false;
+        } catch (DataAccessException ignored) {
         }
     }
 
@@ -170,27 +170,27 @@ public class ServerFacade {
     }
 
     // Websocket methods
-    public void connect(String player, JoinGameRequest.PlayerColor team, Integer gameID, String authToken) throws DataAccessException {
+    public void connect(Integer gameID, String authToken) throws DataAccessException {
         try {
-            var connect = new ConnectCommand(UserGameCommand.CommandType.CONNECT,authToken, gameID, player, team);
+            var connect = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(connect));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
 
-    public void connectObserver(String player, Integer gameID, String authToken) throws DataAccessException {
+    public void connectObserver(Integer gameID, String authToken) throws DataAccessException {
         try {
-            var action = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, player, null);
+            var action = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
 
-    public void makeMove(Integer gameID, String authToken, ChessGame game, String username) throws DataAccessException {
+    public void makeMove(Integer gameID, String authToken, ChessMove move, ChessGame game) throws DataAccessException {
         try {
-            var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move, username);
+            var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(make));
             this.updateGame(gameID, game);
         } catch (IOException ex) {
@@ -198,19 +198,20 @@ public class ServerFacade {
         }
     }
 
-    public void leaveGame(String player, Integer gameID, String authToken) throws DataAccessException {
+    public void leaveGame(Integer gameID, String authToken) throws DataAccessException {
         try {
-            var leave = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID, player);
+            var leave = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(leave));
             this.session.close();
+            this.session = null;
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
     }
 
-    public void resignGame(String player, Integer gameID, String authToken) throws DataAccessException {
+    public void resignGame(Integer gameID, String authToken) throws DataAccessException {
         try {
-            var action = new ResignCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID, player);
+            var action = new ResignCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());

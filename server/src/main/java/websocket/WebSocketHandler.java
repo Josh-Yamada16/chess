@@ -2,11 +2,13 @@
 package websocket;
 
 import com.google.gson.Gson;
-import dataaccess.interfaces.GameDAO;
+import dataaccess.implementations.MySqlAuthDAO;
+import dataaccess.implementations.MySqlGameDAO;
 import exception.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import requests.JoinGameRequest;
 import utility.Utility;
 import websocket.commands.*;
 import websocket.messages.*;
@@ -17,6 +19,8 @@ import java.io.IOException;
 public class WebSocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
+    private MySqlAuthDAO authDAO = new MySqlAuthDAO();
+    private MySqlGameDAO gameDAO = new MySqlGameDAO();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, DataAccessException {
@@ -30,29 +34,37 @@ public class WebSocketHandler {
         }
     }
 
-    private void connect(ConnectCommand com, Session session) throws IOException {
-        connections.add(com.getUsername(), session, com.getGameID());
-        var message = String.format("%s joined the game as %s!", com.getUsername(), com.getColor());
-        broadcast(message, com.getUsername(), com.getGameID());
-        connections.sendLoadGame(com.getUsername(), );
+    private void connect(ConnectCommand com, Session session) throws IOException, DataAccessException {
+        connections.add(authDAO.getAuth(com.getAuthToken()).username(), session, com.getGameID());
+        JoinGameRequest.PlayerColor team = gameDAO.getTeamColor(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
+        String message;
+        if (team != null) {
+            message = String.format("%s joined the game as %s!", authDAO.getAuth(com.getAuthToken()).username(), team.name());
+        }
+        else{
+            message = String.format("%s joined as an observer!", authDAO.getAuth(com.getAuthToken()).username());
+        }
+        broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+        connections.sendLoadGame(authDAO.getAuth(com.getAuthToken()).username(),
+                new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameDAO.getGame(com.getGameID())));
     }
 
-    private void makeMove(MakeMoveCommand com) throws IOException {
+    private void makeMove(MakeMoveCommand com) throws IOException, DataAccessException {
         var result = Utility.convertMoveToString(com.getMove());
         String start = result.getFirst();
         String end = result.getSecond();
-        var message = String.format("%s moved %s to %s!", com.getUsername(), start, end);
-        broadcast(message, com.getUsername(), com.getGameID());
+        var message = String.format("%s moved %s to %s!", authDAO.getAuth(com.getAuthToken()).username(), start, end);
+        broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
     }
 
-    private void leave(LeaveCommand com) throws IOException {
-        connections.remove(com.getUsername());
-        var message = String.format("%s left the game", com.getUsername());
-        broadcast(message, com.getUsername(), com.getGameID());
+    private void leave(LeaveCommand com) throws IOException, DataAccessException {
+        connections.remove(authDAO.getAuth(com.getAuthToken()).username());
+        var message = String.format("%s left the game", authDAO.getAuth(com.getAuthToken()).username());
+        broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
     }
 
-    private void resign(ResignCommand com) throws IOException {
-        var message = String.format("%s resigns the match", com.getUsername());
+    private void resign(ResignCommand com) throws IOException, DataAccessException {
+        var message = String.format("%s resigns the match", authDAO.getAuth(com.getAuthToken()).username());
         broadcast(message, null, com.getGameID());
     }
 

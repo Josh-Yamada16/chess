@@ -28,6 +28,7 @@ public class UiClient {
     public State state = State.PRESIGNIN;
     private final String serverUrl;
     private ChessGame activeGame;
+    private Integer activeGameId;
     private JoinGameRequest.PlayerColor playerColor;
 
     public UiClient(String serverUrl, NotificationHandler notificationHandler) throws DeploymentException, URISyntaxException, IOException {
@@ -216,8 +217,9 @@ public class UiClient {
                     state = State.INGAME;
                     System.out.print(SET_TEXT_COLOR_BLUE + String.format("**Game %d Successfully joined!**\n", num+1));
                     activeGame = games.get(num).game();
+                    activeGameId = games.get(num).gameID();
                     playerColor = color;
-                    server.connect(username, color, games.get(num).gameID(), authToken);
+                    server.connect(games.get(num).gameID(), authToken);
                     BoardPrinter.printBasedOnPov(color, games.get(num).game().getBoard(), new ArrayList<ChessPosition>());
                 }
                 else{
@@ -245,8 +247,10 @@ public class UiClient {
             }
             if (num > -1 & num <= games.size() - 1) {
                 System.out.printf("**Currently Observing game %d**\n", num + 1);
-                server.connectObserver(username, games.get(num).gameID(), authToken);
-                BoardPrinter.printWhitePov(games.get(num).game().getBoard(), new ArrayList<ChessPosition>());
+                server.connectObserver(games.get(num).gameID(), authToken);
+                activeGame = games.get(num).game();
+                activeGameId = games.get(num).gameID();
+                playerColor = JoinGameRequest.PlayerColor.WHITE;
             } else {
                 return SET_TEXT_COLOR_RED + "**Game not available**\n";
             }
@@ -277,7 +281,7 @@ public class UiClient {
         try{
             assertInGame();
             if (params.length == 0) {
-                server.leaveGame(this.username, 0, this.authToken);
+                server.leaveGame(0, this.authToken);
                 // remember to set activeGame to null and playercolor and session
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST LEAVE*\n";
@@ -301,7 +305,7 @@ public class UiClient {
                 // make a route where the pawn is going to be promoted
                 ChessMove move = new ChessMove(start, end, null);
                 activeGame.makeMove(move);
-                server.makeMove(0, authToken, activeGame, username);
+                server.makeMove(activeGameId, authToken, move, activeGame);
                 BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
                 return "";
             }
@@ -356,5 +360,9 @@ public class UiClient {
         if (this.state == State.INGAME) {
             throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must be in game**");
         }
+    }
+
+    public ChessGame getActiveGame() {
+        return activeGame;
     }
 }

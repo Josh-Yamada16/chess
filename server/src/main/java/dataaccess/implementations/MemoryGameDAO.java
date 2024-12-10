@@ -66,7 +66,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public boolean updateGame(int gameID, ChessGame game) throws DataAccessException {
-        return false;
+    public ChessGame updateGame(int gameID, ChessGame game) throws DataAccessException {
+        return null;
     }
 }

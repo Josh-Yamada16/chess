@@ -25,12 +25,14 @@ class SqlGameTest {
     static AuthDAO authDao = new MySqlAuthDAO();
 
     private static JoinGameRequest createRequest;
-    private static UserData existingUser;
+    private static UserData existingUser, newUser;
 
     @BeforeAll
     public static void init() {
 
         existingUser = new UserData("ExistingUser", "existingUserPassword", "eu@mail.com");
+
+        newUser = new UserData("NewUser", "newUserPassword", "nu@mail.com");
 
         createRequest = new JoinGameRequest(JoinGameRequest.PlayerColor.WHITE,1);
 
@@ -107,6 +109,7 @@ class SqlGameTest {
     void testAddPlayer() throws DataAccessException {
         int gameID = gameDao.createGame("newGame");
         gameDao.addPlayer(gameID, createRequest.getPlayerColor(), existingUser.username());
+        gameDao.addPlayer(gameID, createRequest.getPlayerColor(), existingUser.username());
         assertEquals(existingUser.username(), gameDao.getGame(gameID).whiteUsername());
     }
 
@@ -114,7 +117,7 @@ class SqlGameTest {
     void failAddPlayer() throws DataAccessException {
         int gameID = gameDao.createGame("newGame");
         gameDao.addPlayer(gameID, createRequest.getPlayerColor(), existingUser.username());
-        assertFalse(gameDao.addPlayer(gameID, createRequest.getPlayerColor(), existingUser.username()));
+        assertThrows(DataAccessException.class, () -> gameDao.addPlayer(gameID, createRequest.getPlayerColor(), newUser.username()));
     }
 
     @Test

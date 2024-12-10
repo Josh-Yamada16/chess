@@ -8,13 +8,8 @@ import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.sql.*;
 import java.util.HashMap;
 import java.util.UUID;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
-
 
 public class MySqlAuthDAO implements AuthDAO {
 

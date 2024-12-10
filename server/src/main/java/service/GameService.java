@@ -37,16 +37,6 @@ public class GameService {
         if (game.getGameID() == 0 || game.getPlayerColor() == null){
             throw new DataAccessException(400, "Error: bad request");
         }
-        if (game.getPlayerColor() == JoinGameRequest.PlayerColor.WHITE){
-            if (gameDao.getGame(game.getGameID()).whiteUsername() != null) {
-                throw new DataAccessException(403, "Error: already taken");
-            }
-        }
-        else{
-            if (gameDao.getGame(game.getGameID()).blackUsername() != null) {
-                throw new DataAccessException(403, "Error: already taken");
-            }
-        }
         String userName = authDao.getAuth(authToken).username();
         gameDao.addPlayer(game.getGameID(), game.getPlayerColor(), userName);
     }
@@ -58,7 +48,7 @@ public class GameService {
         return gameDao.listGames();
     }
 
-    public boolean updateGame(int gameID, ChessGame game) throws DataAccessException{
+    public ChessGame updateGame(int gameID, ChessGame game) throws DataAccessException{
         return gameDao.updateGame(gameID, game);
     }
 

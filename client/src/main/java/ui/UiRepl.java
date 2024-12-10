@@ -1,12 +1,14 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import websocket.NotificationHandler;
 import websocket.messages.*;
 
 import javax.websocket.DeploymentException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -62,6 +64,7 @@ public class UiRepl implements NotificationHandler{
         if (game != null){
             ChessGame chessGame = (ChessGame) game;
             uiClient.updateActiveGame(chessGame);
+            BoardPrinter.printWhitePov(uiClient.getActiveGame().getBoard(), new ArrayList<ChessPosition>());
         }
     }
 

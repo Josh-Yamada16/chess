@@ -21,5 +21,5 @@ public interface GameDAO {
 
     ArrayList<Integer> onlyGames() throws DataAccessException;
 
-    boolean updateGame(int gameID, ChessGame game) throws DataAccessException;
+    ChessGame updateGame(int gameID, ChessGame game) throws DataAccessException;
 }

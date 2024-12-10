@@ -117,30 +117,51 @@ public class MySqlGameDAO implements GameDAO {
         var statement = "UPDATE games SET whiteusername=?, blackusername=?, gamename=?, chessgame=? WHERE gameid=?";
         var gamejson = new Gson().toJson(game);
         if (teamColor == JoinGameRequest.PlayerColor.WHITE){
-            if (game.whiteUsername() != null){
-                return false;
+            if (game.whiteUsername() == null){
+                executeUpdate(statement, userName, game.blackUsername(), game.gameName(), gamejson, gameID);
+                return true;
             }
-            executeUpdate(statement, userName, game.blackUsername(), game.gameName(), gamejson, gameID);
+            if (game.whiteUsername().equals(userName)){
+                return true;
+            }
+            else{
+                throw new DataAccessException(403, "Error: already taken");
+            }
         }
         else{
-            if (game.blackUsername() != null){
-                return false;
+            if (game.blackUsername() == null){
+                executeUpdate(statement, game.whiteUsername(), userName, game.gameName(), gamejson, gameID);
+                return true;
             }
-            executeUpdate(statement, game.whiteUsername(), userName, game.gameName(), gamejson, gameID);
+            if (game.blackUsername().equals(userName)){
+                return true;
+            }
+            else{
+                throw new DataAccessException(403, "Error: already taken");
+            }
         }
-        return true;
     }
 
     //TODO add new method to update the game based on the gameid
-    public boolean updateGame(int gameID, ChessGame newGame) throws DataAccessException {
+    public ChessGame updateGame(int gameID, ChessGame newGame) throws DataAccessException {
         try{
             var statement = "UPDATE games SET chessgame=? WHERE gameid=?";
             var gamejson = new Gson().toJson(newGame);
             executeUpdate(statement, gamejson, gameID);
-            return true;
+            return getGame(gameID).game();
         } catch (DataAccessException ex) {
-            return false;
+            return null;
         }
+    }
+
+    public JoinGameRequest.PlayerColor getTeamColor(int gameID, String username) throws DataAccessException {
+        if (getGame(gameID).blackUsername().equals(username)){
+            return JoinGameRequest.PlayerColor.BLACK;
+        }
+        else if (getGame(gameID).whiteUsername().equals(username)){
+            return JoinGameRequest.PlayerColor.WHITE;
+        }
+        return null;
     }
 
     // The common method that actually implements the statement for the sql

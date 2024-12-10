@@ -140,12 +140,13 @@ public class Server {
         }
     }
 
-    private void update(Request req, Response res){
+    private Object update(Request req, Response res){
         try{
             var game = new Gson().fromJson(req.body(), GameData.class);
             gameService.updateGame(game.gameID(), game.game());
+            return new Gson().toJson(null);
         } catch (DataAccessException e) {
-            return null;
+            return new Gson().toJson(Map.of("message", e.getMessage()));
         }
     }
 
