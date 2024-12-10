@@ -193,46 +193,40 @@ public class UiClient {
 
     public String joinGame(String... params) throws DataAccessException {
         var games = server.listGames(this.authToken);
-        if (params.length == 2) {
-            assertLoggedIn();
-            JoinGameRequest.PlayerColor color;
-            if (params[1].equalsIgnoreCase("white")){
-                color = JoinGameRequest.PlayerColor.WHITE;
-            }
-            else if (params[1].equalsIgnoreCase("black")){
-                color = JoinGameRequest.PlayerColor.BLACK;
-            }
-            else{
-                return SET_TEXT_COLOR_RED + "**Expected: <white> OR <black>**\n";
-            }
-            int num;
-            try{
-                num = Integer.parseInt(params[0]) - 1;
-            } catch (NumberFormatException ex){
-                return SET_TEXT_COLOR_RED + "**Expected: Game Number**\n";
-            }
-            if (num > -1 & num <= games.size()-1){
-                JoinGameRequest req = new JoinGameRequest(color, games.get(num).gameID());
-                if (server.joinGame(req, this.authToken)){
-                    state = State.INGAME;
-                    System.out.print(SET_TEXT_COLOR_BLUE + String.format("**Game %d Successfully joined!**\n", num+1));
-                    activeGame = games.get(num).game();
-                    activeGameId = games.get(num).gameID();
-                    playerColor = color;
-                    server.connect(games.get(num).gameID(), authToken);
-                    BoardPrinter.printBasedOnPov(color, games.get(num).game().getBoard(), new ArrayList<ChessPosition>());
-                }
-                else{
-                    return SET_TEXT_COLOR_RED + "**Team Already Taken**\n";
-                }
-            }
-            else{
-                return SET_TEXT_COLOR_RED + "**Game not available**\n";
-            }
-        }
-        else{
+        if (params.length != 2) {
             return SET_TEXT_COLOR_RED + "**Expected: <game#> <playerColor>**\n";
         }
+        assertLoggedIn();
+        JoinGameRequest.PlayerColor color;
+        if (params[1].equalsIgnoreCase("white")){
+            color = JoinGameRequest.PlayerColor.WHITE;
+        }
+        else if (params[1].equalsIgnoreCase("black")){
+            color = JoinGameRequest.PlayerColor.BLACK;
+        }
+        else{
+            return SET_TEXT_COLOR_RED + "**Expected: <white> OR <black>**\n";
+        }
+        int num;
+        try{
+            num = Integer.parseInt(params[0]) - 1;
+        } catch (NumberFormatException ex){
+            return SET_TEXT_COLOR_RED + "**Expected: Game Number**\n";
+        }
+        if (num <= -1 || num > games.size()-1) {
+            return SET_TEXT_COLOR_RED + "**Game not available**\n";
+        }
+        JoinGameRequest req = new JoinGameRequest(color, games.get(num).gameID());
+        if (!server.joinGame(req, this.authToken)) {
+            return SET_TEXT_COLOR_RED + "**Team Already Taken**\n";
+        }
+        state = State.INGAME;
+        System.out.print(SET_TEXT_COLOR_BLUE + String.format("**Game %d Successfully joined!**\n", num+1));
+        activeGame = games.get(num).game();
+        activeGameId = games.get(num).gameID();
+        playerColor = color;
+        server.connect(games.get(num).gameID(), authToken);
+        BoardPrinter.printBasedOnPov(color, games.get(num).game().getBoard(), new ArrayList<ChessPosition>());
         return "\n";
     }
 
