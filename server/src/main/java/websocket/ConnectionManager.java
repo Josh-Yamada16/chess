@@ -23,7 +23,7 @@ public class ConnectionManager {
         for (var c : connections.values()) {
             if (c.session != null && c.session.isOpen()) {
                 if (!c.playerName.equals(excludePlayer) && connections.get(excludePlayer).getGameID() == gameID) {
-                    c.send(notification.getMessage());
+                    c.send(new Gson().toJson(notification));
                 }
             }
         }
