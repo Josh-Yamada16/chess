@@ -67,7 +67,7 @@ public class UiRepl implements NotificationHandler{
         if (game != null){
             ChessGame chessGame = (ChessGame) game;
             uiClient.updateActiveGame(chessGame);
-            BoardPrinter.printWhitePov(uiClient.getActiveGame().getBoard(), new ArrayList<ChessPosition>());
+            BoardPrinter.printBasedOnPov(uiClient.getPlayerColor(), uiClient.getActiveGame().getBoard(), new ArrayList<ChessPosition>());
         }
     }
 

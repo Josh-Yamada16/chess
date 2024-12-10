@@ -36,6 +36,10 @@ public class UiClient {
         server = new ServerFacade(serverUrl, notificationHandler);
     }
 
+    public JoinGameRequest.PlayerColor getPlayerColor() {
+        return playerColor;
+    }
+
     public String eval(String input) {
         try {
             var tokens = input.toLowerCase().split(" ");
