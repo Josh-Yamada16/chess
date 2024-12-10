@@ -2,12 +2,10 @@ package websocket;
 
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
-import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,17 +17,17 @@ public class ConnectionManager {
         map.computeIfAbsent(gameID, k -> Collections.synchronizedList(new ArrayList<>())).add(new Connection(player, session));
     }
 
-    public List<Connection> getValues(Integer key) {
-        return map.getOrDefault(key, Collections.emptyList());
+    public List<Connection> getValues(Integer gameID) {
+        return map.getOrDefault(gameID, Collections.emptyList());
     }
 
     public void remove(String player, Integer gameID) {
-        List<Connection> connections = map.get(gameID);
+        List<Connection> connections = getValues(gameID);
         if (connections != null) {
             synchronized (connections) {
                 connections.removeIf(connection -> connection.playerName.equals(player));
                 if (connections.isEmpty()) {
-                    map.remove(gameID);
+                    connections.remove(gameID);
                 }
             }
         }
@@ -58,8 +56,18 @@ public class ConnectionManager {
         }
     }
 
-    public <T> void sendLoadGame(String player, ServerMessage.ServerMessageType type, T mess) throws IOException {
-        Session session = getSessionByPlayer(player);
+    public <T> void loadGameToAllPlayers(Integer gameID, T mess, ServerMessage.ServerMessageType type) throws IOException {
+        try{
+            for (Connection connection : getValues(gameID)){
+                Session sesh = getSessionByPlayer(connection.playerName);
+                sendLoadGame(type, mess, sesh);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public <T> void sendLoadGame(ServerMessage.ServerMessageType type, T mess, Session session) throws IOException {
         if (session == null){
             return;
         }

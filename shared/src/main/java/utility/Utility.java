@@ -34,8 +34,8 @@ public class Utility {
     public static Pair<String, String> convertMoveToString(ChessMove move){
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
-        String first = Integer.toString(start.getRow() - 8) + (char) ((start.getColumn()+1) + 'a' - 1);
-        String sec = Integer.toString(end.getRow() - 8) + (char) ((end.getColumn()+1) + 'a' - 1);
+        String first = (char) ((start.getColumn()+1) + 'a' - 1) + Integer.toString(8-start.getRow());
+        String sec = (char) ((end.getColumn()+1) + 'a' - 1) + Integer.toString(8-end.getRow()) ;
         return new Pair<>(first, sec);
     }
 }
