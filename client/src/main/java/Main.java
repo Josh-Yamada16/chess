@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 
 public class Main {
     public static void main(String[] args) throws DeploymentException, URISyntaxException, IOException {
-        UiRepl repl = new UiRepl(String.format("http://localhost:%s", "8080"));
+        UiRepl repl = new UiRepl("http://localhost:8080");
         repl.run();
     }
 }

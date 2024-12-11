@@ -53,7 +53,7 @@ public class UiClient {
                 case "observe" -> observeGame(params);
                 case "redraw" -> redraw(params);
                 case "leave" -> leave(params);
-                case "make" -> make(params);
+                case "move" -> move(params);
                 case "resign" -> resign(params);
                 case "highlight" -> highlight(params);
                 case "quit" -> "quit";
@@ -93,11 +93,11 @@ public class UiClient {
         else {
             return """
                     - 'redraw' chess board
-                    - 'leave'
                     - 'move' <piece position(A-G/1-8)> <end position(A-G/1-8)>
-                    - 'resign'
                     - 'highlight' legal moves <piece position(A-G/1-8)>
                     - 'help'
+                    - 'leave'
+                    - 'resign'
                     """;
         }
     }
@@ -243,7 +243,7 @@ public class UiClient {
             }
             if (num > -1 & num <= games.size() - 1) {
                 System.out.printf("**Currently Observing game %d**\n", num + 1);
-                server.connectObserver(games.get(num).gameID(), authToken);
+                server.connect(games.get(num).gameID(), authToken);
                 activeGame = games.get(num).game();
                 activeGameId = games.get(num).gameID();
                 playerColor = JoinGameRequest.PlayerColor.WHITE;
@@ -263,6 +263,7 @@ public class UiClient {
             assertInGame();
             if (params.length == 0) {
                 BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
+                return "\n";
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
         } catch (DataAccessException ex) {
@@ -270,7 +271,7 @@ public class UiClient {
                 return SET_TEXT_COLOR_RED + "Expected: *JUST REDRAW*\n";
             }
         }
-        return "";
+        return "\n";
     }
 
     public String leave(String... params) throws DataAccessException {
@@ -278,7 +279,11 @@ public class UiClient {
             assertInGame();
             if (params.length == 0) {
                 server.leaveGame(0, this.authToken);
-                // remember to set activeGame to null and playercolor and session
+                // remember to set activeGame to null and playercolor
+                state = State.POSTSIGNIN;
+                activeGame = null;
+                playerColor = null;
+                return "\n";
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST LEAVE*\n";
         } catch (DataAccessException ex) {
@@ -286,10 +291,10 @@ public class UiClient {
                 return SET_TEXT_COLOR_RED + "**Login already in use!**\n";
             }
         }
-        return "";
+        return "\n";
     }
 
-    public String make(String... params) throws DataAccessException {
+    public String move(String... params) throws DataAccessException {
         try {
             if (params.length == 2) {
                 // need to parse the numbers and letters to convert them to coordinates
@@ -301,9 +306,14 @@ public class UiClient {
                 // make a route where the pawn is going to be promoted
                 ChessMove move = new ChessMove(start, end, null);
                 activeGame.makeMove(move);
-                server.makeMove(activeGameId, authToken, move, activeGame);
+                try{
+                    server.makeMove(activeGameId, authToken, move);
+                } catch (DataAccessException ex) {
+                    this.leave();
+                    return SET_TEXT_COLOR_RED + "**Connection Timed Out**\n";
+                }
                 BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
-                return "";
+                return "\n";
             }
             else{
                 return SET_TEXT_COLOR_RED + "**Expected: <start position(A-G/1-8)> <end position(A-G/1-8)>**\n";
@@ -317,7 +327,8 @@ public class UiClient {
         try{
             if (params.length == 0) {
                 assertInGame();
-
+                server.resignGame(activeGameId, authToken);
+                return "\n";
             }
             return SET_TEXT_COLOR_RED + "Expected: *JUST RESIGN*\n";
         } catch (DataAccessException ex){
@@ -329,12 +340,19 @@ public class UiClient {
     public String highlight(String... params) throws DataAccessException {
         if (params.length == 1) {
             assertInGame();
-            var result = Utility.validateAndParseCoordinates(params[0]);
-            ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
-            // print the board again based on the POV and the available piece moves
-            Collection<ChessMove> moves = activeGame.validMoves(start);
-            BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
-//                BoardPrinter.printWhitePov(games.get(num).game().getBoard());
+            try{
+                var result = Utility.validateAndParseCoordinates(params[0]);
+                ChessPosition start = new ChessPosition( result.getFirst(), result.getSecond());
+                // print the board again based on the POV and the available piece moves
+                Collection<ChessMove> moves = activeGame.validMoves(start);
+                ArrayList<ChessPosition> positions = new ArrayList<>();
+                for (ChessMove move : moves) {
+                    positions.add(move.getEndPosition());
+                }
+                BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), positions);
+            } catch (DataAccessException ex) {
+                return SET_TEXT_COLOR_RED + ex.getMessage();
+            }
         }
         else{
             return SET_TEXT_COLOR_RED + "** Expected: <piece position>**\n";
@@ -347,13 +365,13 @@ public class UiClient {
     }
 
     private void assertLoggedIn() throws DataAccessException {
-        if (this.state == State.PRESIGNIN) {
+        if (this.state != State.POSTSIGNIN) {
             throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must sign in**");
         }
     }
 
     private void assertInGame() throws DataAccessException {
-        if (this.state == State.INGAME) {
+        if (this.state != State.INGAME) {
             throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must be in game**");
         }
     }

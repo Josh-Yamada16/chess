@@ -24,7 +24,7 @@ public class Utility {
             if (numberValue > 8 || numberValue < 1) {
                 throw new DataAccessException(500, "**Expected: a number 1-8**");
             }
-            return new Pair<>(letterValue, numberValue);
+            return new Pair<>(numberValue, letterValue);
         }
         else {
             throw new DataAccessException(500, "**Expected: A-G/1-8**");

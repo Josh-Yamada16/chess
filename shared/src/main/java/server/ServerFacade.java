@@ -9,15 +9,12 @@ import requests.JoinGameRequest;
 import websocket.NotificationHandler;
 import websocket.commands.*;
 
-import javax.websocket.ContainerProvider;
-import javax.websocket.DeploymentException;
-import javax.websocket.MessageHandler;
-import javax.websocket.Session;
+import javax.websocket.*;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 
-public class ServerFacade {
+public class ServerFacade extends Endpoint {
 
     private final String serverUrl;
     private Session session;
@@ -164,16 +161,7 @@ public class ServerFacade {
         }
     }
 
-    public void connectObserver(Integer gameID, String authToken) throws DataAccessException {
-        try {
-            var action = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new DataAccessException(500, ex.getMessage());
-        }
-    }
-
-    public void makeMove(Integer gameID, String authToken, ChessMove move, ChessGame game) throws DataAccessException {
+    public void makeMove(Integer gameID, String authToken, ChessMove move) throws DataAccessException {
         try {
             var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(make));
@@ -200,5 +188,9 @@ public class ServerFacade {
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
+    }
+
+    @Override
+    public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 }

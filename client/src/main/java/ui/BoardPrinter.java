@@ -93,7 +93,7 @@ public class BoardPrinter {
                 }
 
                 if (isHighlighted) {
-                    setGreen(out);
+                    setHighlight(out, (squareRow + boardCol) % 2 == 0);
                 } else {
                     setSquareColor(out, (squareRow + boardCol) % 2 == 0);
                 }
