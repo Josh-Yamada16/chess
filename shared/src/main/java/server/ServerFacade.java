@@ -8,7 +8,6 @@ import model.*;
 import requests.JoinGameRequest;
 import websocket.NotificationHandler;
 import websocket.commands.*;
-import websocket.messages.NotificationMessage;
 
 import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
@@ -22,12 +21,18 @@ public class ServerFacade {
 
     private final String serverUrl;
     private Session session;
-    private NotificationHandler notificationHandler;
-
 
     public ServerFacade(String url, NotificationHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
         serverUrl = url;
-        this.notificationHandler = notificationHandler;
+        URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
+        this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
+
+        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            @Override
+            public void onMessage(String message) {
+                notificationHandler.notify(message);
+            }
+        });
     }
 
     public ServerFacade(String url) {
@@ -86,16 +91,6 @@ public class ServerFacade {
         try{
             var path = "/game";
             this.makeRequest("PUT", path, request, null, authToken);
-
-            URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
-            this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
-
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    notificationHandler.notify(message);
-                }
-            });
 
             return true;
         } catch (Exception e){
