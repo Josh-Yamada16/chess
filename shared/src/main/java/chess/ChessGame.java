@@ -13,6 +13,7 @@ public class ChessGame {
     private int round = 0;
     private TeamColor teamTurn = TeamColor.WHITE;
     private ChessBoard board = new ChessBoard();
+    private GameState gameState = GameState.NORMAL;
 
     public ChessGame() {
         board.resetBoard();
@@ -157,7 +158,16 @@ public class ChessGame {
         NORMAL,
         CHECK,
         CHECKMATE,
-        STALEMATE;
+        STALEMATE,
+        RESIGNED;
+    }
+
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
     }
 
     public GameState gameState(ChessGame hypoGame, TeamColor team) {

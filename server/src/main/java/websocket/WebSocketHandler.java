@@ -89,6 +89,7 @@ public class WebSocketHandler {
     private void leave(LeaveCommand com, Session session) throws IOException, DataAccessException {
         try{
             connections.remove(authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
+            gameDAO.removePlayer(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
             var message = String.format("%s left the game", authDAO.getAuth(com.getAuthToken()).username());
             broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
         } catch (DataAccessException | IOException ex) {
@@ -98,7 +99,18 @@ public class WebSocketHandler {
 
     private void resign(ResignCommand com, Session session) throws IOException, DataAccessException {
         try{
+            ChessGame game = gameDAO.getGame(com.getGameID()).game();
+            if (game.getGameState().equals(ChessGame.GameState.RESIGNED)){
+                connections.sendLoadGame(ServerMessage.ServerMessageType.ERROR, "ERROR", session);
+            }
             var message = String.format("%s resigns the match", authDAO.getAuth(com.getAuthToken()).username());
+            JoinGameRequest.PlayerColor team = gameDAO.getTeamColor(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
+            if (team == null){
+                connections.sendLoadGame(ServerMessage.ServerMessageType.ERROR, "ERROR", session);
+                return;
+            }
+            game.setGameState(ChessGame.GameState.RESIGNED);
+            gameDAO.updateGame(com.getGameID(), game);
             broadcast(message, "", com.getGameID());
         } catch (DataAccessException | IOException ex) {
             broadcast(ex.getMessage(), authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
@@ -112,6 +124,9 @@ public class WebSocketHandler {
 
     private void verifyChessMove(ChessMove move, int gameID, JoinGameRequest.PlayerColor team) throws DataAccessException {
         ChessGame game = gameDAO.getGame(gameID).game();
+        if (game.getGameState().equals(ChessGame.GameState.RESIGNED)){
+            throw new DataAccessException(500, "ERROR: No more move available.");
+        }
         if (!game.moveInSet(move, game.validMoves(move.getStartPosition()))){
             throw new DataAccessException(500, "ERROR: Move not in moveset.");
         }

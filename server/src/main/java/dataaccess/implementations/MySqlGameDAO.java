@@ -142,6 +142,31 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
+    @Override
+    public boolean removePlayer(int gameID, String userName) throws DataAccessException {
+        GameData game = this.getGame(gameID);
+        if (game == null) {
+            throw new DataAccessException(403, "Error: Game not found");
+        }
+
+        String statement = "UPDATE games SET whiteusername=?, blackusername=? WHERE gameid=?";
+        String newWhiteUsername = game.whiteUsername();
+        String newBlackUsername = game.blackUsername();
+
+        // Check which player to remove
+        if (userName.equals(game.whiteUsername())) {
+            newWhiteUsername = null;
+        } else if (userName.equals(game.blackUsername())) {
+            newBlackUsername = null;
+        } else {
+            throw new DataAccessException(404, "Error: Player not found in the game");
+        }
+
+        // Execute the update
+        executeUpdate(statement, newWhiteUsername, newBlackUsername, gameID);
+        return true;
+    }
+
     public ChessGame updateGame(int gameID, ChessGame newGame) throws DataAccessException {
         try{
             var statement = "UPDATE games SET chessgame=? WHERE gameid=?";

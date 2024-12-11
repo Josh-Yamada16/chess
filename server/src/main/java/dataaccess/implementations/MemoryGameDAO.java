@@ -69,4 +69,8 @@ public class MemoryGameDAO implements GameDAO {
     public ChessGame updateGame(int gameID, ChessGame game) throws DataAccessException {
         return null;
     }
+
+    public boolean removePlayer(int gameID, String userName) throws DataAccessException{
+        return false;
+    }
 }
