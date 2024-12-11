@@ -153,6 +153,26 @@ public class ChessGame {
         return 0;
     }
 
+    public enum GameState {
+        NORMAL,
+        CHECK,
+        CHECKMATE,
+        STALEMATE;
+    }
+
+    public GameState gameState(ChessGame hypoGame, TeamColor team) {
+        if (hypoGame.isInCheck(team)){
+            if (hypoGame.isInCheckmate(team)){
+                return GameState.CHECKMATE;
+            }
+            return GameState.CHECK;
+        }
+        if (hypoGame.isInStalemate(team)){
+            return GameState.STALEMATE;
+        }
+        return GameState.NORMAL;
+    }
+
     /**
      * Determines if the given team is in check
      *

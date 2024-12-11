@@ -3,6 +3,7 @@ package websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.implementations.MySqlAuthDAO;
 import dataaccess.implementations.MySqlGameDAO;
@@ -36,7 +37,7 @@ public class WebSocketHandler {
         }
     }
 
-    private void connect(ConnectCommand com, Session session) throws IOException, DataAccessException {
+    private void connect(ConnectCommand com, Session session) throws IOException {
         try{
             connections.add(authDAO.getAuth(com.getAuthToken()).username(), session, com.getGameID());
             JoinGameRequest.PlayerColor team = gameDAO.getTeamColor(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
@@ -54,20 +55,33 @@ public class WebSocketHandler {
         }
     }
 
-    private void makeMove(MakeMoveCommand com, Session session) throws IOException, DataAccessException {
+    private void makeMove(MakeMoveCommand com, Session session) throws IOException {
         try{
             var result = Utility.convertMoveToString(com.getMove());
             JoinGameRequest.PlayerColor team = gameDAO.getTeamColor(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
             if (team == null){
                 connections.sendLoadGame(ServerMessage.ServerMessageType.ERROR, "ERROR", session);
+                return;
             }
+            ChessGame.TeamColor opTeam = switch (team){
+                case WHITE -> ChessGame.TeamColor.BLACK;
+                case BLACK -> ChessGame.TeamColor.WHITE;
+            };
             verifyChessMove(com.getMove(), com.getGameID(), team);
             String start = result.getFirst();
             String end = result.getSecond();
             var message = String.format("%s moved %s to %s!", authDAO.getAuth(com.getAuthToken()).username(), start, end);
             broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
-            connections.loadGameToAllPlayers(com.getGameID(), message, ServerMessage.ServerMessageType.LOAD_GAME);
-        } catch (DataAccessException | IOException ex) {
+            ChessGame game = gameDAO.getGame(com.getGameID()).game();
+            game.makeMove(com.getMove());
+            gameDAO.updateGame(com.getGameID(), game);
+            switch (game.gameState(game, opTeam)){
+                case CHECK -> broadcast(String.format(opTeam.name() + "is in Check"), "", com.getGameID());
+                case CHECKMATE -> broadcast(String.format(opTeam.name() + "is in Checkmate"), "", com.getGameID());
+                case STALEMATE -> broadcast("The game is in Stalemate", "", com.getGameID());
+            }
+            connections.loadGameToEveryone(com.getGameID(), game, ServerMessage.ServerMessageType.LOAD_GAME);
+        } catch (DataAccessException | IOException | InvalidMoveException ex) {
             connections.sendLoadGame(ServerMessage.ServerMessageType.ERROR, "ERROR", session);
         }
     }
@@ -85,7 +99,7 @@ public class WebSocketHandler {
     private void resign(ResignCommand com, Session session) throws IOException, DataAccessException {
         try{
             var message = String.format("%s resigns the match", authDAO.getAuth(com.getAuthToken()).username());
-            broadcast(message, null, com.getGameID());
+            broadcast(message, "", com.getGameID());
         } catch (DataAccessException | IOException ex) {
             broadcast(ex.getMessage(), authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
         }
@@ -102,7 +116,11 @@ public class WebSocketHandler {
             throw new DataAccessException(500, "ERROR: Move not in moveset.");
         }
         if (!game.getTeamTurn().name().equals(team.name())) {
-            throw new DataAccessException(500, "ERROR: Move not in moveset.");
+            throw new DataAccessException(500, "ERROR: Not team's turn.");
+        }
+        if (game.isInCheckmate(ChessGame.TeamColor.BLACK) || game.isInCheckmate(ChessGame.TeamColor.WHITE)
+                || game.isInStalemate(ChessGame.TeamColor.BLACK) || game.isInStalemate(ChessGame.TeamColor.WHITE)){
+            throw new DataAccessException(500, "ERROR: No more move available.");
         }
     }
 }

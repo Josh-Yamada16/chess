@@ -11,14 +11,14 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    private final ConcurrentHashMap<Integer, List<Connection>> map = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, List<Connection>> connections = new ConcurrentHashMap<>();
 
     public void add(String player, Session session, Integer gameID) {
-        map.computeIfAbsent(gameID, k -> Collections.synchronizedList(new ArrayList<>())).add(new Connection(player, session));
+        connections.computeIfAbsent(gameID, k -> Collections.synchronizedList(new ArrayList<>())).add(new Connection(player, session));
     }
 
     public List<Connection> getValues(Integer gameID) {
-        return map.getOrDefault(gameID, Collections.emptyList());
+        return connections.getOrDefault(gameID, Collections.emptyList());
     }
 
     public void remove(String player, Integer gameID) {
@@ -34,11 +34,11 @@ public class ConnectionManager {
     }
 
     public Session getSessionByPlayer(String playerName) {
-        for (List<Connection> connections : map.values()) {
-            synchronized (connections) {
-                for (Connection connection : connections) {
-                    if (connection.playerName.equals(playerName)) {
-                        return connection.session;
+        for (List<Connection> connects : connections.values()) {
+            synchronized (connects) {
+                for (Connection connec : connects) {
+                    if (connec.playerName.equals(playerName)) {
+                        return connec.session;
                     }
                 }
             }
@@ -56,11 +56,10 @@ public class ConnectionManager {
         }
     }
 
-    public <T> void loadGameToAllPlayers(Integer gameID, T mess, ServerMessage.ServerMessageType type) throws IOException {
+    public <T> void loadGameToEveryone(Integer gameID, T mess, ServerMessage.ServerMessageType type) throws IOException {
         try{
             for (Connection connection : getValues(gameID)){
-                Session sesh = getSessionByPlayer(connection.playerName);
-                sendLoadGame(type, mess, sesh);
+                sendLoadGame(type, mess, connection.session);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -75,9 +74,9 @@ public class ConnectionManager {
             return;
         }
         var messageJson = switch (type) {
-            case LOAD_GAME -> new Gson().toJson(new LoadGameMessage(type, mess));
+            case LOAD_GAME -> new Gson().toJson(new LoadGameMessage<>(type, mess));
             case ERROR -> new Gson().toJson(new ErrorMessage(type, (String) mess));
-            default -> throw new IllegalArgumentException("Unsupported message type: " + type);
+            case NOTIFICATION -> null;
         };
         session.getRemote().sendString(messageJson);
     }

@@ -103,16 +103,6 @@ public class ServerFacade {
         }
     }
 
-    public void updateGame(int gameID, ChessGame chessGame){
-        try{
-            var path = "/update";
-            GameData game = new GameData(gameID, null, null, null, chessGame);
-            this.makeRequest("PUT", path, game, null, null);
-        } catch (DataAccessException ex) {
-
-        }
-    }
-
     public void clear() throws DataAccessException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, null, null);
@@ -192,7 +182,6 @@ public class ServerFacade {
         try {
             var make = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(make));
-            this.updateGame(gameID, game);
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
