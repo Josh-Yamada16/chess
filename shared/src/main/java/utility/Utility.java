@@ -3,7 +3,6 @@ package utility;
 import chess.ChessMove;
 import chess.ChessPosition;
 import exception.DataAccessException;
-import org.glassfish.grizzly.utils.Pair;
 
 public class Utility {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
@@ -11,7 +10,7 @@ public class Utility {
 
     public Utility(){}
 
-    public static Pair<Integer, Integer> validateAndParseCoordinates(String coordinates) throws DataAccessException{
+    public static Pair validateAndParseCoordinates(String coordinates) throws DataAccessException{
         char firstChar = coordinates.charAt(0);
         char secondChar = coordinates.charAt(1);
 
@@ -31,7 +30,7 @@ public class Utility {
         }
     }
 
-    public static Pair<String, String> convertMoveToString(ChessMove move){
+    public static Pair convertMoveToString(ChessMove move){
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
         String first = (char) ((start.getColumn()+1) + 'a' - 1) + Integer.toString(8-start.getRow());

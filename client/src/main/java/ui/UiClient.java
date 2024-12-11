@@ -281,6 +281,7 @@ public class UiClient {
                 server.leaveGame(0, this.authToken);
                 // remember to set activeGame to null and playercolor
                 state = State.POSTSIGNIN;
+                state = State.POSTSIGNIN;
                 activeGame = null;
                 playerColor = null;
                 return "\n";
@@ -325,6 +326,7 @@ public class UiClient {
 
     public String resign(String... params) throws DataAccessException {
         try{
+            // make sure to verify they want to resign
             if (params.length == 0) {
                 assertInGame();
                 server.resignGame(activeGameId, authToken);
@@ -334,7 +336,6 @@ public class UiClient {
         } catch (DataAccessException ex){
             return SET_TEXT_COLOR_RED + ex.getMessage();
         }
-
     }
 
     public String highlight(String... params) throws DataAccessException {
@@ -342,7 +343,7 @@ public class UiClient {
             assertInGame();
             try{
                 var result = Utility.validateAndParseCoordinates(params[0]);
-                ChessPosition start = new ChessPosition( result.getFirst(), result.getSecond());
+                ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
                 // print the board again based on the POV and the available piece moves
                 Collection<ChessMove> moves = activeGame.validMoves(start);
                 ArrayList<ChessPosition> positions = new ArrayList<>();
