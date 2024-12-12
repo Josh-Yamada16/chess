@@ -68,8 +68,8 @@ public class WebSocketHandler {
                 case BLACK -> ChessGame.TeamColor.WHITE;
             };
             verifyChessMove(com.getMove(), com.getGameID(), team);
-            String start = result.getFirst();
-            String end = result.getSecond();
+            String start = (String) result.getFirst();
+            String end = (String) result.getSecond();
             var message = String.format("%s moved %s to %s!", authDAO.getAuth(com.getAuthToken()).username(), start, end);
             broadcast(message, authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
             ChessGame game = gameDAO.getGame(com.getGameID()).game();

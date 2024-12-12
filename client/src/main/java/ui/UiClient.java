@@ -337,6 +337,24 @@ public class UiClient {
         }
     }
 
+//    private verifyResign() {
+//        Scanner scanner = new Scanner(System.in);
+//        var result = "";
+//        while (!result.equals("quit")) {
+//            System.out.print(RESET_BG_COLOR + RESET_TEXT_COLOR);
+//            System.out.print(SET_TEXT_COLOR_BLUE + "Are you sure you want to resign?");
+//            String line = scanner.nextLine();
+//
+//            try {
+//                result = uiClient.eval(line);
+//                System.out.print(SET_TEXT_COLOR_BLUE + result);
+//            } catch (Throwable e) {
+//                var msg = e.toString();
+//                System.out.print(msg);
+//            }
+//        }
+//    }
+
     public String highlight(String... params) throws DataAccessException {
         if (params.length == 1) {
             assertInGame();

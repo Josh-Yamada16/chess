@@ -10,7 +10,5 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="junit.jupiter" level="project" />
     <orderEntry type="library" name="google.code.gson" level="project" />
-    <orderEntry type="library" name="glassfish.tyrus.bundles.standalone.client" level="project" />
-    <orderEntry type="module" module-name="client" />
   </component>
 </module>
