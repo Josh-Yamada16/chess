@@ -17,18 +17,11 @@ public class ServerFacade extends Endpoint {
 
     private final String serverUrl;
     private Session session;
+    private NotificationHandler notificationHandler;
 
     public ServerFacade(String url, NotificationHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
         serverUrl = url;
-        URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
-        this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
-
-        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-            @Override
-            public void onMessage(String message) {
-                notificationHandler.notify(message);
-            }
-        });
+        this.notificationHandler = notificationHandler;
     }
 
     public ServerFacade(String url) {
@@ -87,7 +80,6 @@ public class ServerFacade extends Endpoint {
         try{
             var path = "/game";
             this.makeRequest("PUT", path, request, null, authToken);
-
             return true;
         } catch (Exception e){
             return false;
@@ -153,9 +145,17 @@ public class ServerFacade extends Endpoint {
     // Websocket methods
     public void connect(Integer gameID, String authToken) throws DataAccessException {
         try {
+            URI socketURI = new URI(serverUrl.replace("http", "ws") + "/ws");
+            this.session = ContainerProvider.getWebSocketContainer().connectToServer(this, socketURI);
+            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+                @Override
+                public void onMessage(String message) {
+                    notificationHandler.notify(message);
+                }
+            });
             var connect = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(connect));
-        } catch (IOException ex) {
+        } catch (IOException | DeploymentException | URISyntaxException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
     }

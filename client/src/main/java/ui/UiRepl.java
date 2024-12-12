@@ -61,7 +61,7 @@ public class UiRepl implements NotificationHandler{
         NotificationMessage notMessage = new Gson().fromJson(message, NotificationMessage.class);
 
         switch (notMessage.getServerMessageType()){
-            case NOTIFICATION, ERROR -> System.out.println(new Gson().fromJson(message, NotificationMessage.class).getMessage());
+            case NOTIFICATION, ERROR -> System.out.println(new Gson().fromJson(message, NotificationMessage.class).getMessage() + '\n');
             case LOAD_GAME -> loadGame(new Gson().fromJson(message, LoadGameMessage.class).getGame());
         }
     }

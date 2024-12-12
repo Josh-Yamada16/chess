@@ -1,4 +1,3 @@
-import chess.*;
 import ui.UiRepl;
 
 import javax.websocket.DeploymentException;

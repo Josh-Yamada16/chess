@@ -156,7 +156,10 @@ public class UiClient {
 
     public String logout(String... params) throws DataAccessException {
         if (params.length == 0) {
-            assertLoggedIn();
+            if (!assertLoggedIn()){
+                return SET_TEXT_COLOR_RED + "**You must sign in**\n";
+            }
+
             if (server.logout(this.authToken)){
                 state = State.PRESIGNIN;
                 return String.format("**See you next time %s!**\n", username);
@@ -170,7 +173,12 @@ public class UiClient {
 
     public String createGame(String... params) throws DataAccessException {
         if (params.length == 1) {
-            assertLoggedIn();
+            if (!assertLoggedIn() ){
+                return SET_TEXT_COLOR_RED + "**You must sign in**\n";
+            }
+            else if (assertInGame() || assertObserving()){
+                return SET_TEXT_COLOR_RED + "**You must be in the main menu**\n";
+            }
             if (server.createGame(params[0], this.authToken)){
                 return "**Your game has been created!**\n";
             }
@@ -184,7 +192,12 @@ public class UiClient {
 
     public String listGames(String... params) throws DataAccessException {
         if (params.length == 0) {
-            assertLoggedIn();
+            if (!assertLoggedIn()){
+                return SET_TEXT_COLOR_RED + "**You must sign in**\n";
+            }
+            else if (assertInGame() || assertObserving()){
+                return SET_TEXT_COLOR_RED + "**You must be in the main menu**\n";
+            }
             var games = server.listGames(this.authToken);
             if (games.isEmpty()){
                 return "**No Games Yet**\n";
@@ -209,7 +222,12 @@ public class UiClient {
         if (params.length != 2) {
             return SET_TEXT_COLOR_RED + "**Expected: <game#> <playerColor>**\n";
         }
-        assertLoggedIn();
+        if (!assertLoggedIn()){
+            return SET_TEXT_COLOR_RED + "**You must sign in**\n";
+        }
+        else if (assertInGame() || assertObserving()){
+            return SET_TEXT_COLOR_RED + "**You must be in the main menu**\n";
+        }
         JoinGameRequest.PlayerColor color;
         if (params[1].equalsIgnoreCase("white")){
             color = JoinGameRequest.PlayerColor.WHITE;
@@ -247,7 +265,9 @@ public class UiClient {
         var games = server.listGames(this.authToken);
         int num;
         if (params.length == 1) {
-            assertLoggedIn();
+            if (!assertLoggedIn()){
+                return SET_TEXT_COLOR_RED + "**You must sign in**\n";
+            }
             try {
                 num = Integer.parseInt(params[0]) - 1;
             } catch (NumberFormatException ex) {
@@ -274,7 +294,9 @@ public class UiClient {
 
     public String redraw(String... params) throws DataAccessException {
         try {
-            assertInGame();
+            if (assertLoggedIn()){
+                return SET_TEXT_COLOR_RED + "**You must be in game**\n";
+            }
             if (params.length == 0) {
                 BoardPrinter.printBasedOnPov(playerColor, activeGame.getBoard(), new ArrayList<ChessPosition>());
                 return "\n";
@@ -290,9 +312,11 @@ public class UiClient {
 
     public String leave(String... params) throws DataAccessException {
         try{
-            assertInGame();
+            if (assertLoggedIn()){
+                return SET_TEXT_COLOR_RED + "**You must be in game**\n";
+            }
             if (params.length == 0) {
-                server.leaveGame(0, this.authToken);
+                server.leaveGame(activeGameId, this.authToken);
                 // remember to set activeGame to null and playercolor
                 state = State.POSTSIGNIN;
                 activeGame = null;
@@ -312,7 +336,9 @@ public class UiClient {
         try {
             if (params.length == 2) {
                 // need to parse the numbers and letters to convert them to coordinates
-                assertInGame();
+                if (!assertInGame()){
+                    return SET_TEXT_COLOR_RED + "**You must be a player in a game**\n";
+                }
                 var result = Utility.validateAndParseCoordinates(params[0]);
                 var result1 = Utility.validateAndParseCoordinates(params[1]);
                 ChessPosition start = new ChessPosition((int) result.getFirst(), (int) result.getSecond());
@@ -341,7 +367,9 @@ public class UiClient {
         try{
             // make sure to verify they want to resign
             if (params.length == 0) {
-                assertInGame();
+                if (!assertInGame()){
+                    return SET_TEXT_COLOR_RED + "**You must be a player in a game**\n";
+                }
                 if (!verifyResign()){
                     return "";
                 }
@@ -374,7 +402,9 @@ public class UiClient {
 
     public String highlight(String... params) throws DataAccessException {
         if (params.length == 1) {
-            assertInGame();
+            if (assertLoggedIn()){
+                return SET_TEXT_COLOR_RED + "**You must be in game**\n";
+            }
             try{
                 var result = Utility.validateAndParseCoordinates(params[0]);
                 ChessPosition start = new ChessPosition((int) result.getFirst(), (int) result.getSecond());
@@ -399,16 +429,16 @@ public class UiClient {
         activeGame = game;
     }
 
-    private void assertLoggedIn() throws DataAccessException {
-        if (this.state != State.POSTSIGNIN) {
-            throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must sign in**");
-        }
+    private boolean assertLoggedIn() throws DataAccessException {
+        return this.state == State.POSTSIGNIN;
     }
 
-    private void assertInGame() throws DataAccessException {
-        if (this.state != State.INGAME) {
-            throw new DataAccessException(400, SET_TEXT_COLOR_RED + "**You must be in game**");
-        }
+    private boolean assertInGame() throws DataAccessException {
+        return this.state == State.INGAME;
+    }
+
+    private boolean assertObserving() throws DataAccessException {
+        return this.state == State.OBSERVE;
     }
 
     public ChessGame getActiveGame() {

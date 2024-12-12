@@ -32,7 +32,7 @@ public class WebSocketHandler {
         switch (com.getCommandType()) {
             case CONNECT -> connect(new Gson().fromJson(message, ConnectCommand.class), session);
             case MAKE_MOVE -> makeMove(new Gson().fromJson(message, MakeMoveCommand.class), session);
-            case LEAVE -> leave(new Gson().fromJson(message, LeaveCommand.class), session);
+            case LEAVE -> leave(new Gson().fromJson(message, LeaveCommand.class));
             case RESIGN -> resign(new Gson().fromJson(message, ResignCommand.class), session);
         }
     }
@@ -86,7 +86,7 @@ public class WebSocketHandler {
         }
     }
 
-    private void leave(LeaveCommand com, Session session) throws IOException, DataAccessException {
+    private void leave(LeaveCommand com) throws IOException, DataAccessException {
         try{
             connections.remove(authDAO.getAuth(com.getAuthToken()).username(), com.getGameID());
             gameDAO.removePlayer(com.getGameID(), authDAO.getAuth(com.getAuthToken()).username());
