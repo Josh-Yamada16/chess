@@ -281,7 +281,6 @@ public class UiClient {
                 server.leaveGame(0, this.authToken);
                 // remember to set activeGame to null and playercolor
                 state = State.POSTSIGNIN;
-                state = State.POSTSIGNIN;
                 activeGame = null;
                 playerColor = null;
                 return "\n";
@@ -302,8 +301,8 @@ public class UiClient {
                 assertInGame();
                 var result = Utility.validateAndParseCoordinates(params[0]);
                 var result1 = Utility.validateAndParseCoordinates(params[1]);
-                ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
-                ChessPosition end = new ChessPosition(result1.getFirst(), result1.getSecond());
+                ChessPosition start = new ChessPosition((int) result.getFirst(), (int) result.getSecond());
+                ChessPosition end = new ChessPosition((int) result1.getFirst(), (int) result1.getSecond());
                 // make a route where the pawn is going to be promoted
                 ChessMove move = new ChessMove(start, end, null);
                 activeGame.makeMove(move);
@@ -343,7 +342,7 @@ public class UiClient {
             assertInGame();
             try{
                 var result = Utility.validateAndParseCoordinates(params[0]);
-                ChessPosition start = new ChessPosition(result.getFirst(), result.getSecond());
+                ChessPosition start = new ChessPosition((int) result.getFirst(), (int) result.getSecond());
                 // print the board again based on the POV and the available piece moves
                 Collection<ChessMove> moves = activeGame.validMoves(start);
                 ArrayList<ChessPosition> positions = new ArrayList<>();
