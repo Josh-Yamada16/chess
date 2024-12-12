@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -183,10 +184,10 @@ public class MySqlGameDAO implements GameDAO {
         if (game == null){
             throw new DataAccessException(403, "Error: Game not found");
         }
-        if (getGame(gameID).blackUsername().equals(username)){
+        if (Objects.equals(getGame(gameID).blackUsername(), username)){
             return JoinGameRequest.PlayerColor.BLACK;
         }
-        else if (getGame(gameID).whiteUsername().equals(username)){
+        else if (Objects.equals(getGame(gameID).whiteUsername(), username)){
             return JoinGameRequest.PlayerColor.WHITE;
         }
         return null;

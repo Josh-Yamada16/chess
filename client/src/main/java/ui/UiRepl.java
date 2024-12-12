@@ -36,8 +36,11 @@ public class UiRepl implements NotificationHandler{
             else if (uiClient.state == State.POSTSIGNIN){
                 func = this::printLoggedinPrompt;
             }
-            else{
+            else if (uiClient.state == State.INGAME){
                 func = this::printInGamePrompt;
+            }
+            else{
+                func = this::printObservingPrompt;
             }
             func.execute();
             String line = scanner.nextLine();
@@ -86,4 +89,9 @@ public class UiRepl implements NotificationHandler{
     private void printInGamePrompt() {
         System.out.print("\n" + "[IN_GAME]" + ">>> ");
     }
+
+    private void printObservingPrompt() {
+        System.out.print("\n" + "[OBSERVING]" + ">>> ");
+    }
+
 }

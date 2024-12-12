@@ -33,19 +33,6 @@ public class ConnectionManager {
         }
     }
 
-    public Session getSessionByPlayer(String playerName) {
-        for (List<Connection> connects : connections.values()) {
-            synchronized (connects) {
-                for (Connection connec : connects) {
-                    if (connec.playerName.equals(playerName)) {
-                        return connec.session;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     public void broadcast(String excludePlayer, ServerMessage notification, Integer gameID) throws IOException {
         List<Connection> connections = this.getValues(gameID);
         for (Connection connection : connections) {

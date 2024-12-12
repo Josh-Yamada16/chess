@@ -18,6 +18,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
@@ -90,7 +91,7 @@ public class UiClient {
                     - 'help'
                     """;
         }
-        else {
+        else if (state == State.INGAME) {
             return """
                     - 'redraw' chess board
                     - 'move' <piece position(A-G/1-8)> <end position(A-G/1-8)>
@@ -99,6 +100,16 @@ public class UiClient {
                     - 'leave'
                     - 'resign'
                     """;
+        }
+
+        else{
+            return """
+                    - 'redraw' chess board
+                    - 'highlight' legal moves <piece position(A-G/1-8)>
+                    - 'help'
+                    - 'leave'
+                    """;
+
         }
     }
 
@@ -236,6 +247,7 @@ public class UiClient {
         var games = server.listGames(this.authToken);
         int num;
         if (params.length == 1) {
+            assertLoggedIn();
             try {
                 num = Integer.parseInt(params[0]) - 1;
             } catch (NumberFormatException ex) {
@@ -244,9 +256,11 @@ public class UiClient {
             if (num > -1 & num <= games.size() - 1) {
                 System.out.printf("**Currently Observing game %d**\n", num + 1);
                 server.connect(games.get(num).gameID(), authToken);
+                state = State.OBSERVE;
                 activeGame = games.get(num).game();
                 activeGameId = games.get(num).gameID();
                 playerColor = JoinGameRequest.PlayerColor.WHITE;
+                BoardPrinter.printBasedOnPov(playerColor, games.get(num).game().getBoard(), new ArrayList<ChessPosition>());
             } else {
                 return SET_TEXT_COLOR_RED + "**Game not available**\n";
             }
@@ -328,6 +342,9 @@ public class UiClient {
             // make sure to verify they want to resign
             if (params.length == 0) {
                 assertInGame();
+                if (!verifyResign()){
+                    return "";
+                }
                 server.resignGame(activeGameId, authToken);
                 return "\n";
             }
@@ -337,23 +354,23 @@ public class UiClient {
         }
     }
 
-//    private verifyResign() {
-//        Scanner scanner = new Scanner(System.in);
-//        var result = "";
-//        while (!result.equals("quit")) {
-//            System.out.print(RESET_BG_COLOR + RESET_TEXT_COLOR);
-//            System.out.print(SET_TEXT_COLOR_BLUE + "Are you sure you want to resign?");
-//            String line = scanner.nextLine();
-//
-//            try {
-//                result = uiClient.eval(line);
-//                System.out.print(SET_TEXT_COLOR_BLUE + result);
-//            } catch (Throwable e) {
-//                var msg = e.toString();
-//                System.out.print(msg);
-//            }
-//        }
-//    }
+    private boolean verifyResign() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.print(RESET_BG_COLOR);
+            System.out.print(SET_TEXT_COLOR_BLUE + "Are you sure you want to resign? (y)es/(n)o: ");
+            String line = scanner.nextLine();
+            try {
+                return switch (line.toLowerCase()) {
+                    case "y", "yes" -> true;
+                    case "n", "no" -> false;
+                    default -> throw new DataAccessException(500, "ERROR: Invalid Input");
+                };
+            } catch (Throwable e) {
+                System.out.print(e.getMessage());
+            }
+        }
+    }
 
     public String highlight(String... params) throws DataAccessException {
         if (params.length == 1) {
